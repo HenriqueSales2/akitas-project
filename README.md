@@ -16,3 +16,6 @@ Com mais de 40 plásticas o Ken Humano é
 simplesmente moggador de betinhas.
 
 ![alt text](image.png)
+
+
+NUNCA, JAMAIS ARRASTE PARA BAIXO O TERMINAL HENRIQUE
