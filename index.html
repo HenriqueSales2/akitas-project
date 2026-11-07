@@ -1,91 +1,381 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Akitas Barbearia — corte e barba com hora marcada</title>
-<meta name="description" content="Barbearia Akitas: corte, barba e acabamento. Escolha o serviço, o dia e o horário e agende pelo site.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>Akitas Estudio</title>
+
+    <meta name="description"
+        content="Barbearia Akitas: corte, barba e acabamento. Escolha o serviço, o dia e o horário e agende pelo site.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Figtree:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<header><div class="wrap"><a class="logo" href="#">AKITAS</a><a class="nav-cta" href="#agendar">Agendar</a></div></header>
 
-<main>
-<div class="hero" id="top">
- <div class="bg" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
- <div class="media"><video id="v" src="video/akitas.mp4" muted playsinline preload="auto" poster="img/poster.jpg" aria-label="Barbeiro da Akitas cortando o cabelo de um cliente"></video></div>
- <div class="copy wrap">
-  <h1>Akitas<br>Barbearia</h1>
-  <p>Corte, barba e acabamento feitos com calma, num ambiente para você relaxar. Escolha o horário e venha.</p>
-  <div class="btns"><a class="btn" href="#agendar">Agendar meu horário</a><a class="btn ghost" href="#servicos">Ver serviços e preços</a></div>
- </div>
- <button class="start" id="start" type="button" hidden>Toque para começar</button>
- <button class="skip" id="skip" type="button">Pular vídeo</button>
- <div class="prog" id="prog"></div>
-</div>
-<div class="pole" aria-hidden="true"></div>
+    <header>
+        <div class="wrap">
+            <a class="logo" href="#">AKITAS</a>
+            <a class="nav-cta" href="#agendar">Agendar</a>
+        </div>
+    </header>
 
-<section id="cortes"><div class="wrap cgrid">
- <div>
-  <h2>Nossos cortes</h2>
-  <p class="lead">Arraste o dedo para os lados e controle o vídeo: para a direita avança, para a esquerda volta. Toque nas miniaturas para trocar de corte.</p>
- </div>
- <div class="cui">
-  <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-   <video id="cv" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
-   <div class="hint" id="hint" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
-   <div class="track"><i id="bar"></i></div>
-  </div>
-  <div class="cap"><button class="arr" id="prev" type="button" aria-label="Corte anterior">‹</button><strong id="cn" aria-live="polite"></strong><button class="arr" id="next" type="button" aria-label="Próximo corte">›</button></div>
-  <div class="thumbs" id="th"></div>
- </div>
-</div></section>
+    <main>
 
-<section id="servicos"><div class="wrap">
- <h2>Serviços</h2>
- <p class="lead">Valores por atendimento. Toque em agendar para já escolher o serviço.</p>
- <ul class="services">
-  <li><div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small></div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button></li>
-  <li><div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div><span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button></li>
-  <li><div><strong>Corte + barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
-  <li><div><strong>Acabamento</strong><small>Pezinho, contorno e sobrancelha · 15 min</small></div><span class="price">R$ 20</span><button class="mini" data-s="Acabamento">Agendar</button></li>
- </ul>
-</div></section>
+        <div class="hero" id="top">
+            <div class="bg" aria-hidden="true" style="background-image: url(img/poster.jpg)"></div>
 
-<section id="agendar" class="book"><div class="wrap grid">
- <div>
-  <h2>Agende seu corte</h2>
-  <p class="lead">Escolha o serviço, o dia e o horário. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
- </div>
- <form id="f" novalidate>
-  <fieldset><legend>1. Serviço</legend>
-   <div class="opts" id="svc"></div></fieldset>
-  <fieldset><legend>2. Dia</legend>
-   <input type="date" id="d" aria-label="Dia do atendimento"><p class="msg" id="dm"></p></fieldset>
-  <fieldset><legend>3. Horário</legend>
-   <div class="slots" id="sl"></div><p class="msg" id="sm">Escolha um dia para ver os horários.</p></fieldset>
-  <fieldset><legend>4. Seus dados</legend>
-   <div class="row"><div><label class="l" for="n">Nome</label><input type="text" id="n" autocomplete="name"></div>
-   <div><label class="l" for="t">Telefone</label><input type="tel" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
-  <button class="btn" type="submit">Enviar pedido de agendamento</button>
-  <p class="msg err" id="e" role="alert"></p>
-  <div class="ok" id="ok" hidden></div>
- </form>
-</div></section>
-</main>
+            <div class="media">
+                <video
+                    id="v"
+                    src="video/akitas.mp4"
+                    muted
+                    playsinline
+                    preload="auto"
+                    poster="img/poster.jpg"
+                    aria-label="Barbeiro da Akitas cortando o cabelo de um cliente">
+                </video>
+            </div>
 
-<footer><div class="wrap">
- <div class="info">
-  <div><h3>Horário</h3><p>Ter a sex: 9h às 20h<br>Sábado: 9h às 17h<br>Domingo e segunda: fechado</p></div>
-  <div><h3>Endereço</h3><p>Rua Exemplo, 123<br>São Paulo, SP</p></div>
-  <div><h3>Contato</h3><p>WhatsApp (11) 99999-9999<br>@akitasbarbearia</p></div>
- </div>
- <p class="copyr">© 2026 Akitas Barbearia</p>
-</div></footer>
+            <div class="copy wrap">
+                <h1>
+                    Akitas<br>
+                    Estudio
+                </h1>
 
-<script src="script.js"></script>
+                <p>
+                    Corte, barba, tatuagens e piercing feitos com calma, num ambiente para você relaxar.
+                    Escolha o horário e venha.
+                </p>
+
+                <div class="btns">
+                    <a class="btn" href="#agendar">Agendar meu horário</a>
+                    <a class="btn ghost" href="#servicos">Ver serviços e preços</a>
+                </div>
+            </div>
+
+            <button class="start" id="start" type="button" hidden>
+                Toque para começar
+            </button>
+
+            <button class="skip" id="skip" type="button">
+                Pular vídeo
+            </button>
+
+            <div class="prog" id="prog"></div>
+        </div>
+
+        <div class="pole" aria-hidden="true"></div>
+
+        <section id="cortes">
+            <div class="wrap cgrid">
+
+                <div>
+                    <h2>Nossos cortes</h2>
+
+                    <p class="lead">
+                        Arraste o dedo para os lados e controle o vídeo: para a direita avança,
+                        para a esquerda volta. Toque nas miniaturas para trocar de corte.
+                    </p>
+                </div>
+
+                <div class="cui">
+
+                    <div
+                        class="scrub"
+                        id="scrub"
+                        tabindex="0"
+                        role="slider"
+                        aria-label="Arraste para os lados para girar o corte"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="0">
+
+                        <video
+                            id="cv"
+                            muted
+                            playsinline
+                            preload="none"
+                            disablepictureinpicture
+                            aria-hidden="true">
+                        </video>
+
+                        <div class="hint" id="hint" aria-hidden="true">
+                            <span>‹</span>
+                            Arraste
+                            <span>›</span>
+                        </div>
+
+                        <div class="track">
+                            <i id="bar"></i>
+                        </div>
+
+                    </div>
+
+                    <div class="cap">
+                        <button
+                            class="arr"
+                            id="prev"
+                            type="button"
+                            aria-label="Corte anterior">
+                            ‹
+                        </button>
+
+                        <strong id="cn" aria-live="polite"></strong>
+
+                        <button
+                            class="arr"
+                            id="next"
+                            type="button"
+                            aria-label="Próximo corte">
+                            ›
+                        </button>
+                    </div>
+
+                    <div class="thumbs" id="th"></div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="servicos">
+            <div class="wrap">
+
+                <h2>Serviços</h2>
+
+                <p class="lead">
+                    Valores por atendimento. Toque em agendar para já escolher o serviço.
+                </p>
+
+                <ul class="services">
+
+                    <li>
+                        <div>
+                            <strong>Acabamento</strong>
+                            <small>
+                                Pezinho, contorno e sobrancelha · 15 min
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 20</span>
+
+                        <button class="mini" data-s="Acabamento">
+                            Agendar
+                        </button>
+                    </li>
+
+                    <li>
+                        <div>
+                            <strong>Barba</strong>
+                            <small>
+                                Toalha quente, navalha e hidratação · 30 min
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 40</span>
+
+                        <button class="mini" data-s="Barba">
+                            Agendar
+                        </button>
+                    </li>
+
+                    <li>
+                        <div>
+                            <strong>Corte</strong>
+                            <small>
+                                Máquina ou tesoura, finalizado com navalha · 40 min
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 50</span>
+
+                        <button class="mini" data-s="Corte">
+                            Agendar
+                        </button>
+                    </li>
+
+                    <li>
+                        <div>
+                            <strong>Corte + barba</strong>
+                            <small>
+                                O combo completo · 1h10
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 80</span>
+
+                        <button class="mini" data-s="Corte + barba">
+                            Agendar
+                        </button>
+                    </li>
+
+                    <li>
+                        <div>
+                            <strong>Piercing</strong>
+                            <small>
+                                Aplicação de piercing · Consulte disponibilidade
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 120</span>
+
+                        <button class="mini" data-s="Piercing">
+                            Agendar
+                        </button>
+                    </li>
+
+                    <li>
+                        <div>
+                            <strong>Tattoo</strong>
+                            <small>
+                                Tatuagem personalizada · Consulte disponibilidade
+                            </small>
+                        </div>
+
+                        <span class="price">R$ 250</span>
+
+                        <button class="mini" data-s="Tattoo">
+                            Agendar
+                        </button>
+                    </li>
+
+                </ul>
+            </div>
+        </section>
+
+        <section id="agendar" class="book">
+            <div class="wrap grid">
+
+                <div>
+                    <h2>Agende seu corte</h2>
+
+                    <p class="lead">
+                        Escolha o serviço, o dia e o horário. Ao enviar, abrimos o WhatsApp
+                        da barbearia com o pedido pronto para confirmar.
+                    </p>
+                </div>
+
+                <form id="f" novalidate>
+
+                    <fieldset>
+                        <legend>1. Serviço</legend>
+
+                        <div class="opts" id="svc"></div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>2. Dia</legend>
+
+                        <input
+                            type="date"
+                            id="d"
+                            aria-label="Dia do atendimento">
+
+                        <p class="msg" id="dm"></p>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>3. Horário</legend>
+
+                        <div class="slots" id="sl"></div>
+
+                        <p class="msg" id="sm">
+                            Escolha um dia para ver os horários.
+                        </p>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>4. Seus dados</legend>
+
+                        <div class="row">
+
+                            <div>
+                                <label class="l" for="n">Nome</label>
+
+                                <input
+                                    type="text"
+                                    id="n"
+                                    autocomplete="name">
+                            </div>
+
+                            <div>
+                                <label class="l" for="t">Telefone</label>
+
+                                <input
+                                    type="tel"
+                                    id="t"
+                                    autocomplete="tel"
+                                    placeholder="(11) 90000-0000">
+                            </div>
+
+                        </div>
+                    </fieldset>
+
+                    <button class="btn" type="submit">
+                        Enviar pedido de agendamento
+                    </button>
+
+                    <p class="msg err" id="e" role="alert"></p>
+
+                    <div class="ok" id="ok" hidden></div>
+
+                </form>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="wrap">
+
+            <div class="info">
+
+                <div>
+                    <h3>Horário</h3>
+
+                    <p>
+                        Ter a sex: 9h às 20h<br>
+                        Sábado: 9h às 17h<br>
+                        Domingo e segunda: fechado
+                    </p>
+                </div>
+
+                <div>
+                    <h3>Endereço</h3>
+
+                    <p>
+                        Rua Exemplo, 123<br>
+                        São Paulo, SP
+                    </p>
+                </div>
+
+                <div>
+                    <h3>Contato</h3>
+
+                    <p>
+                        WhatsApp (11) 99999-9999<br>
+                        @akitasbarbearia
+                    </p>
+                </div>
+
+            </div>
+
+            <p class="copyr">© 2026 Akitas Barbearia</p>
+
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+
 </body>
 </html>
