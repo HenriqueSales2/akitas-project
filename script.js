@@ -294,13 +294,14 @@ $("f").addEventListener("submit", async e => {
 
 (() => {
     const CUTS = [
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Afro com fade",
+        "Degradê preciso",
+        "Crop com fade",
+        "Tranças com desenho",
+        "Cornrows com fade",
+        "Platinado",
+        "Grisalho ondulado",
+        "Topete com risca"
     ];
 
     const $ = id => document.getElementById(id),
@@ -325,7 +326,7 @@ $("f").addEventListener("submit", async e => {
     CUTS.forEach((n, i) =>
         th.insertAdjacentHTML(
             "beforeend",
-            `<button type="button" aria-label="${n}"><img src="img/cortes/corte-${i + 1}.jpeg" alt="" loading="lazy"></button>`
+            `<button type="button" aria-label="${n}"><img src="img/cortes/corte-${i + 1}.jpg" alt="" loading="lazy"></button>`
         )
     );
 
@@ -333,7 +334,7 @@ $("f").addEventListener("submit", async e => {
         cur = (i + CUTS.length) % CUTS.length;
         target = pos = vel = 0;
 
-        v.poster = `img/cortes/corte-${cur + 1}.jpeg`;
+        v.poster = `img/cortes/corte-${cur + 1}-poster.jpg`;
         v.src = `video/cortes/corte-${cur + 1}.mp4`;
 
         cn.textContent = CUTS[cur];
@@ -503,4 +504,95 @@ $("f").addEventListener("submit", async e => {
         v.preload = "auto";
         v.load();
     }
+})();
+
+/* ===== Menu fixo: fundo ao rolar e link da seção atual ===== */
+(()=>{
+const hd=document.querySelector("header");
+const solid=()=>hd.classList.toggle("solid",scrollY>60);addEventListener("scroll",solid,{passive:true});solid();
+const links=[...document.querySelectorAll(".links a")];
+if("IntersectionObserver"in window){
+ const so=new IntersectionObserver(en=>en.forEach(x=>{if(x.isIntersecting)links.forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+x.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
+ links.forEach(a=>{const s=document.querySelector(a.getAttribute("href"));if(s)so.observe(s)});
+}
+})();
+
+/* ===== Jacaré entra andando na seção Serviços =====
+   Chrome, Edge e Firefox: video/croc.webm (WebM com transparência de verdade, sem nenhum truque de script).
+   Safari e iPhone não leem transparência em WebM; lá usamos video/croc.mp4, que guarda a cor (metade de cima)
+   e a transparência (metade de baixo), e juntamos as duas num canvas. */
+(()=>{
+const stage=document.getElementById("croc"),cv=document.getElementById("crocc"),mp4=document.getElementById("crocv"),wm=document.getElementById("crocw");
+if(!stage||!cv||!mp4)return;
+const M={w:782,h:600,fx0:245,fx1:713};            // tamanho do recorte e onde o jacaré para (em px do vídeo)
+const ua=navigator.userAgent;
+const noAlpha=/iP(hone|ad|od)/.test(ua)||(/^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(ua));
+const useWebm=!!wm&&!noAlpha&&!!wm.canPlayType&&wm.canPlayType('video/webm; codecs="vp9"')!=="";
+const vid=useWebm?wm:mp4;
+if(!useWebm&&wm)wm.remove();
+cv.width=M.w;cv.height=M.h;
+const ctx=cv.getContext("2d");
+const off=document.createElement("canvas");off.width=M.w;off.height=M.h*2;
+const octx=off.getContext("2d",{willReadFrequently:true});
+const out=ctx.createImageData(M.w,M.h);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let started=false;
+if(useWebm)cv.style.display="none";
+
+/* posiciona o jacaré: começa colado na borda esquerda da tela (ele "entra" por ali) e para na coluna do título */
+function layout(){
+ const sh=stage.clientHeight,s=sh/M.h,r=stage.getBoundingClientRect();
+ const crocW=(M.fx1-M.fx0)*s,fx0=M.fx0*s;
+ const want=r.left+(stage.clientWidth-crocW)/2;     // onde queremos o jacaré parado (x na tela)
+ const left=Math.min(0,want-fx0);                   // o vídeo nunca começa depois da borda da tela
+ for(const el of [cv,useWebm?wm:null]){if(!el)continue;el.style.width=M.w*s+"px";el.style.height=sh+"px";el.style.left=(left-r.left)+"px"}
+ stage.style.setProperty("--gx",(left-r.left+fx0+crocW/2)+"px");
+ stage.style.setProperty("--gw",crocW*1.05+"px");
+}
+layout();addEventListener("resize",layout);addEventListener("load",layout);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layout);
+
+function arrive(){stage.classList.add("arrived")}
+function still(){                                    // sem animação: mostra só o jacaré já parado
+ const im=new Image();
+ im.onload=()=>{if(wm)wm.style.display="none";cv.style.display="";ctx.clearRect(0,0,M.w,M.h);ctx.drawImage(im,0,0,M.w,M.h);arrive()};
+ im.src="img/croc-final.webp";
+}
+function draw(){
+ octx.drawImage(vid,0,0,M.w,M.h*2);
+ const d=octx.getImageData(0,0,M.w,M.h*2).data,o=out.data,n=M.w*M.h*4;
+ for(let i=0;i<n;i+=4){o[i]=d[i];o[i+1]=d[i+1];o[i+2]=d[i+2];o[i+3]=d[n+i]}
+ ctx.putImageData(out,0,0);
+}
+const next=cb=>"requestVideoFrameCallback"in vid?vid.requestVideoFrameCallback(cb):requestAnimationFrame(cb);
+function tick(){
+ try{
+  if(vid.readyState>=2)draw();
+  if(vid.ended){draw();arrive();return}
+ }catch(e){still();return}                           // navegador bloqueou a leitura dos pixels: mostra a pose final
+ next(tick);
+}
+function go(){
+ if(started)return;started=true;
+ if(reduce){still();return}
+ vid.preload="auto";
+ vid.addEventListener("ended",()=>{if(!useWebm){try{draw()}catch(e){still();return}}arrive()},{once:true});
+ vid.addEventListener("error",still,{once:true});
+ const p=vid.play();
+ if(useWebm){if(p&&p.catch)p.catch(still);return}   // se o navegador bloquear o autoplay, mostra a pose final
+ if(p&&p.then)p.then(()=>next(tick),still);else next(tick);
+}
+if("IntersectionObserver"in window){
+ new IntersectionObserver((en,o)=>{if(en[0].isIntersecting){vid.preload="auto";vid.load();o.disconnect()}},{rootMargin:"800px"}).observe(stage);
+ new IntersectionObserver((en,o)=>{if(en[0].isIntersecting){o.disconnect();go()}},{threshold:.6}).observe(stage);
+}else go();
+})();
+
+/* ===== Revelar blocos ao rolar ===== */
+(()=>{
+const els=document.querySelectorAll(".reveal,section h2,section .lead");
+els.forEach(e=>e.classList.add("reveal"));
+if(!("IntersectionObserver"in window)){els.forEach(e=>e.classList.add("in"));return}
+const io=new IntersectionObserver(en=>en.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+els.forEach(e=>io.observe(e));
 })();
