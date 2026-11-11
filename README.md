@@ -21,3 +21,9 @@ Jacare na secao "Servicos":
   video/croc.mp4       versao para Safari/iPhone (o script.js junta cor e transparencia num canvas)
   img/croc-final.webp  pose final parada (usada se o navegador bloquear o video)
   O tamanho dele muda em .croc no style.css.
+
+Barbeiros, turnos e limite de vagas (em server.js, no topo da secao "Configuracao"):
+  BARBEIROS         lista de barbeiros (Joao, Pedro, Gustavo)
+  TURNOS            manha 08:30-12:00, tarde 13:00-18:00, noite 18:00-20:00
+  LIMITE_POR_TURNO  maximo de clientes por barbeiro em cada turno (10)
+Sabado nao tem turno da noite (regra em script.js, funcao slots()).

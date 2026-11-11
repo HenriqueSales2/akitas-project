@@ -65,29 +65,37 @@
 <section id="agendar" class="book"><div class="wrap grid">
  <div>
   <h2>Agende seu corte</h2>
-  <p class="lead">Escolha o serviço, o dia e o horário. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
+  <p class="lead">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
  </div>
  <form id="f" class="reveal" novalidate>
   <fieldset><legend>1. Serviço</legend>
    <div class="opts" id="svc"></div></fieldset>
-  <fieldset><legend>2. Dia</legend>
+  <fieldset><legend>2. Barbeiro</legend>
+   <div class="opts" id="bar-opts"></div></fieldset>
+  <fieldset><legend>3. Dia</legend>
    <input type="date" id="d" aria-label="Dia do atendimento"><p class="msg" id="dm"></p></fieldset>
-  <fieldset><legend>3. Horário</legend>
-   <div class="slots" id="sl"></div><p class="msg" id="sm">Escolha um dia para ver os horários.</p></fieldset>
-  <fieldset><legend>4. Seus dados</legend>
+  <fieldset><legend>4. Turno</legend>
+   <div class="opts turnos" id="sl"></div><p class="msg" id="sm">Escolha o barbeiro e o dia para ver os turnos.</p></fieldset>
+  <fieldset><legend>5. Seus dados</legend>
    <div class="row"><div><label class="l" for="n">Nome</label><input type="text" id="n" autocomplete="name"></div>
    <div><label class="l" for="t">Telefone</label><input type="tel" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
   <button class="btn" type="submit">Enviar pedido de agendamento</button>
   <p class="msg err" id="e" role="alert"></p>
   <div class="ok" id="ok" hidden></div>
  </form>
+
+ <div class="stage" id="stage" aria-hidden="true">
+  <video class="barber" data-b="Alexandre" muted playsinline preload="auto"><source src="video/barbeiros/alexandre.webm" type="video/webm"><source src="video/barbeiros/alexandre.mp4" type="video/mp4"></video>
+  <video class="barber" data-b="Luiz" muted playsinline preload="auto"><source src="video/barbeiros/luiz.webm" type="video/webm"><source src="video/barbeiros/luiz.mp4" type="video/mp4"></video>
+  <video class="barber" data-b="Matheus" muted playsinline preload="auto"><source src="video/barbeiros/matheus.webm" type="video/webm"><source src="video/barbeiros/matheus.mp4" type="video/mp4"></video>
+ </div>
 </div></section>
 </main>
 
 <footer id="contato"><div class="wrap">
  <div class="brand"><img src="img/malas1.jpg" alt="" width="56" height="56"><span>Akitas <em>Estudio</em></span></div>
  <div class="info">
-  <div><h3>Horário</h3><p>Ter a sex: 9h às 20h<br>Sábado: 9h às 17h<br>Domingo e segunda: fechado</p></div>
+  <div><h3>Horário</h3><p>Ter a sex: 8h30 às 20h<br>Sábado: 8h30 às 18h<br>Domingo e segunda: fechado</p></div>
   <div><h3>Endereço</h3><p>Avenida Sapopemba, 6839<br>São Paulo, SP</p></div>
   <div><h3>Contato</h3><p>WhatsApp (11) 99999-9999<br>@akitasbarbearia</p></div>
  </div>

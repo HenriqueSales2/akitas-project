@@ -15,7 +15,8 @@ const $ = id => document.getElementById(id);
 
 const svc = $("svc"),
     sl = $("sl"),
-    d = $("d");
+    d = $("d"),
+    barOpts = $("bar-opts");
 
 SV.forEach(([n, p], i) => {
     svc.insertAdjacentHTML(
@@ -35,26 +36,65 @@ max.setDate(max.getDate() + 60);
 
 d.max = `${max.getFullYear()}-${pad(max.getMonth() + 1)}-${pad(max.getDate())}`;
 
-// Busca horários ocupados para uma data via API
-async function buscarOcupados(data) {
+// Barbeiros, turnos e limite vêm do servidor (server.js é a única fonte dessas regras)
+let CONFIG = {
+    barbeiros: ["Alexandre", "Luiz", "Matheus"],
+    turnos: [
+        { id: "manha", nome: "Manhã", inicio: "08:30", fim: "12:00" },
+        { id: "tarde", nome: "Tarde", inicio: "13:00", fim: "18:00" },
+        { id: "noite", nome: "Noite", inicio: "18:00", fim: "20:00" }
+    ],
+    limite: 10
+};
+
+const hhmm = t => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+};
+
+function renderBarbeiros() {
+    barOpts.innerHTML = "";
+    CONFIG.barbeiros.forEach(n =>
+        barOpts.insertAdjacentHTML(
+            "beforeend",
+            `<label class="opt"><input type="radio" name="b" value="${n}"><span>${n}</span></label>`
+        )
+    );
+}
+
+async function carregarConfig() {
+    try {
+        const resp = await fetch("/api/config");
+        if (resp.ok) CONFIG = await resp.json();
+    } catch (err) {
+        console.warn("Usando configuração padrão:", err);
+    }
+    renderBarbeiros();
+}
+
+carregarConfig();
+
+// Busca as vagas usadas de uma data (por barbeiro e turno)
+async function buscarVagas(data) {
     try {
         const resp = await fetch(`/api/agendamentos?data=${encodeURIComponent(data)}`);
         const json = await resp.json();
-        return json.ocupados || [];
+        return json.vagas || {};
     } catch (err) {
-        console.warn("Não foi possível buscar horários ocupados:", err);
-        return [];
+        console.warn("Não foi possível buscar as vagas:", err);
+        return {};
     }
 }
 
-// Renderiza slots bloqueando os já ocupados
+// Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam
 async function slots() {
     sl.innerHTML = "";
 
     const v = d.value;
+    const barbeiro = document.querySelector("input[name=b]:checked")?.value;
 
-    if (!v) {
-        $("sm").textContent = "Escolha um dia para ver os horários.";
+    if (!v || !barbeiro) {
+        $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
         return;
     }
 
@@ -72,43 +112,37 @@ async function slots() {
         return;
     }
 
-    const end = w === 6 ? 17 : 20;
-    const ocupados = await buscarOcupados(v);
+    const vagas = await buscarVagas(v);
+    const agora = new Date();
+    const ehHoje = dt.toDateString() === agora.toDateString();
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
     let any = false;
 
-    for (let h = 9; h < end; h++) {
-        for (const mi of [0, 30]) {
-            const t = `${pad(h)}:${pad(mi)}`;
-            const jaOcupado = ocupados.includes(t);
+    for (const t of CONFIG.turnos) {
+        // Sábado: sem turno da noite (fecha às 18h)
+        if (w === 6 && t.id === "noite") continue;
+        // Turno de hoje que já terminou
+        if (ehHoje && hhmm(t.fim) <= minutosAgora) continue;
 
-            if (
-                dt.toDateString() === today.toDateString() &&
-                (h * 60 + mi) <= today.getHours() * 60 + today.getMinutes()
-            ) continue;
+        const restantes = vagas[barbeiro]?.[t.id]?.restantes ?? CONFIG.limite;
+        const lotado = restantes <= 0;
+        const info = lotado
+            ? "Lotado"
+            : `${restantes} ${restantes === 1 ? "vaga" : "vagas"}`;
 
-            if (jaOcupado) {
-                // Horário ocupado — mostra escuro e sem selectable
-                sl.insertAdjacentHTML(
-                    "beforeend",
-                    `<label class="opt ocupado"><input type="radio" name="h" value="${t}" disabled><span>${t}</span></label>`
-                );
-                continue;
-            }
+        if (!lotado) any = true;
 
-            any = true;
-            sl.insertAdjacentHTML(
-                "beforeend",
-                `<label class="opt"><input type="radio" name="h" value="${t}"><span>${t}</span></label>`
-            );
-        }
+        sl.insertAdjacentHTML(
+            "beforeend",
+            `<label class="opt${lotado ? " ocupado" : ""}"><input type="radio" name="h" value="${t.id}" ${lotado ? "disabled" : ""}><span><span class="tn">${t.nome}<small>${t.inicio} às ${t.fim}</small></span><b>${info}</b></span></label>`
+        );
     }
 
-    $("sm").textContent = any ? "" : "Sem horários livres hoje. Escolha outro dia.";
+    $("sm").textContent = any ? "" : "Sem vagas para este barbeiro neste dia. Escolha outro barbeiro ou outro dia.";
 }
 
-d.addEventListener("change", async () => {
-    await slots();
-});
+d.addEventListener("change", slots);
+barOpts.addEventListener("change", slots);
 
 document.querySelectorAll(".mini").forEach(b =>
     b.addEventListener("click", () => {
@@ -124,6 +158,7 @@ $("f").addEventListener("submit", async e => {
     e.preventDefault();
 
     const s = document.querySelector("input[name=s]:checked"),
+        b = document.querySelector("input[name=b]:checked"),
         h = document.querySelector("input[name=h]:checked"),
         n = $("n").value.trim(),
         t = $("t").value.trim();
@@ -135,14 +170,18 @@ $("f").addEventListener("submit", async e => {
     ok.hidden = true;
 
     if (!s) return err.textContent = "Escolha um serviço.";
+    if (!b) return err.textContent = "Escolha o barbeiro.";
     if (!d.value) return err.textContent = "Escolha o dia do atendimento.";
-    if (!h) return err.textContent = "Escolha um horário.";
+    if (!h) return err.textContent = "Escolha um turno.";
     if (n.length < 2) return err.textContent = "Informe seu nome.";
     if (t.replace(/\D/g, "").length < 10) return err.textContent = "Informe um telefone com DDD.";
 
     const [y, m, dd] = d.value.split("-");
     const dataISO = `${y}-${m}-${dd}`;
     const dataBR = `${dd}/${m}/${y}`;
+
+    const turno = CONFIG.turnos.find(t => t.id === h.value);
+    const turnoTxt = `${turno.nome} (${turno.inicio} às ${turno.fim})`;
 
     const preco = SV.find(([nm]) => nm === s.value)[1];
 
@@ -157,14 +196,16 @@ $("f").addEventListener("submit", async e => {
                 servico: s.value,
                 preco: preco,
                 data: dataISO,
-                horario: h.value
+                barbeiro: b.value,
+                turno: h.value
             })
         });
 
         const result = await resp.json();
 
         if (!resp.ok) {
-            err.textContent = result.error || "Não foi possível reservar este horário.";
+            err.textContent = result.error || "Não foi possível reservar este turno.";
+            slots();
             return;
         }
 
@@ -177,23 +218,25 @@ $("f").addEventListener("submit", async e => {
         ok.innerHTML = `
             <strong>✅ Agendamento confirmado!</strong>
             <p class="msg"><strong>Serviço:</strong> ${s.value}<br>
-            <strong>Dia:</strong> ${dataBR} às ${h.value}<br>
+            <strong>Barbeiro:</strong> ${b.value}<br>
+            <strong>Dia:</strong> ${dataBR}<br>
+            <strong>Turno:</strong> ${turnoTxt}<br>
             <strong>Nome:</strong> ${n}<br>
             <strong>Valor:</strong> R$ ${preco}</p>
-            <p class="msg">Seu horário já está reservado no sistema. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
+            <p class="msg">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
             <a class="btn" href="${url}" target="_blank" rel="noopener">Abrir WhatsApp</a>
         `;
 
         $("f").reset();
         $("sl").innerHTML = "";
-        $("sm").textContent = "Escolha um dia para ver os horários.";
+        $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
         $("dm").textContent = "";
 
         // Abre o WhatsApp após confirmar no banco
         window.open(url, "_blank", "noopener");
 
-    } catch (err) {
-        console.error("Erro ao salvar agendamento:", err);
+    } catch (ex) {
+        console.error("Erro ao salvar agendamento:", ex);
         err.textContent = "Erro de conexão com o servidor. Tente novamente.";
     }
 });
@@ -595,4 +638,42 @@ els.forEach(e=>e.classList.add("reveal"));
 if(!("IntersectionObserver"in window)){els.forEach(e=>e.classList.add("in"));return}
 const io=new IntersectionObserver(en=>en.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.12,rootMargin:"0px 0px -6% 0px"});
 els.forEach(e=>io.observe(e));
+})();
+
+
+/* ===== Barbeiro selecionado entra em cena (vídeo) ===== */
+(function () {
+    const stage = document.getElementById("stage");
+    if (!stage) return;
+    const norm = s => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const vids = [...stage.querySelectorAll(".barber")];
+    let atual = null;
+
+    function mostrar(nome) {
+        const alvo = vids.find(v => norm(v.dataset.b) === norm(nome)) || null;
+        if (alvo === atual) return;
+
+        // quem estava em cena sai suavemente e pausa depois da transição
+        if (atual) {
+            const saindo = atual;
+            saindo.classList.remove("on");
+            setTimeout(() => { if (!saindo.classList.contains("on")) saindo.pause(); }, 1000);
+        }
+
+        atual = alvo;
+        if (alvo) {
+            alvo.currentTime = 0;
+            const p = alvo.play();
+            if (p && p.catch) p.catch(() => {});
+            // força o navegador a registrar o estado inicial antes de animar a entrada
+            requestAnimationFrame(() => requestAnimationFrame(() => alvo.classList.add("on")));
+        }
+    }
+
+    document.getElementById("bar-opts").addEventListener("change", e => {
+        if (e.target.name === "b") mostrar(e.target.value);
+    });
+
+    // depois de enviar o formulário (reset), o barbeiro sai de cena
+    document.getElementById("f").addEventListener("reset", () => setTimeout(() => mostrar(null), 0));
 })();
