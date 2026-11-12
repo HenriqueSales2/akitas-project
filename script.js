@@ -6,9 +6,7 @@ const SV = [
     ["Corte", 50],
     ["Barba", 40],
     ["Corte + barba", 80],
-    ["Acabamento", 20],
-    ["Tatto", 250],
-    ["Piercing", 120]
+    ["Acabamento", 20]
 ];
 
 const $ = id => document.getElementById(id);
