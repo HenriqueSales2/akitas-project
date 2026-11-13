@@ -63,7 +63,7 @@
 <section id="agendar" class="book"><div class="wrap grid">
  <div>
   <h2>Agende seu corte</h2>
-  <p class="lead">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
+  <p class="lead">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, reservamos sua vaga e disponibilizamos o WhatsApp para falar com a barbearia.</p>
  </div>
  <form id="f" class="reveal" novalidate>
   <fieldset><legend>1. Serviço</legend>
@@ -77,7 +77,7 @@
   <fieldset><legend>5. Seus dados</legend>
    <div class="row"><div><label class="l" for="n">Nome</label><input type="text" id="n" autocomplete="name"></div>
    <div><label class="l" for="t">Telefone</label><input type="tel" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
-  <button class="btn" type="submit">Enviar pedido de agendamento</button>
+  <button class="btn" type="submit" disabled>Carregando agendamento...</button>
   <p class="msg err" id="e" role="alert"></p>
   <div class="ok" id="ok" hidden></div>
  </form>
@@ -100,6 +100,7 @@
  <p class="copyr">© 2026 Os Malas Studio</p>
 </div></footer>
 
+<script src="supabase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

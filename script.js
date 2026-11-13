@@ -2,12 +2,9 @@
 
 const WA = "5511999999999";
 
-const SV = [
-    ["Corte", 50],
-    ["Barba", 40],
-    ["Corte + barba", 80],
-    ["Acabamento", 20]
-];
+let SV = [];
+let CONFIG;
+let consultaVagas = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -16,12 +13,7 @@ const svc = $("svc"),
     d = $("d"),
     barOpts = $("bar-opts");
 
-SV.forEach(([n, p], i) => {
-    svc.insertAdjacentHTML(
-        "beforeend",
-        `<label class="opt"><input type="radio" name="s" value="${n}"><span>${n}<b>R$ ${p}</b></span></label>`
-    );
-});
+const enviar = $("f").querySelector("button[type=submit]");
 
 const pad = n => String(n).padStart(2, "0");
 
@@ -34,16 +26,24 @@ max.setDate(max.getDate() + 60);
 
 d.max = `${max.getFullYear()}-${pad(max.getMonth() + 1)}-${pad(max.getDate())}`;
 
-// Barbeiros, turnos e limite vêm do servidor (server.js é a única fonte dessas regras)
-let CONFIG = {
-    barbeiros: ["Alexandre", "Luiz", "Matheus"],
-    turnos: [
-        { id: "manha", nome: "Manhã", inicio: "08:30", fim: "12:00" },
-        { id: "tarde", nome: "Tarde", inicio: "13:00", fim: "18:00" },
-        { id: "noite", nome: "Noite", inicio: "18:00", fim: "20:00" }
-    ],
-    limite: 10
-};
+async function supabaseRPC(funcao, parametros = {}) {
+    const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/rpc/${funcao}`, {
+        method: "POST",
+        headers: {
+            apikey: SUPABASE_CONFIG.publishableKey,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(parametros)
+    });
+    const resultado = await resp.json();
+    if (!resp.ok) {
+        console.error(`Erro no Supabase (${funcao}):`, resultado);
+        throw new Error(resultado.code === "22023"
+            ? resultado.message
+            : "Não foi possível acessar os agendamentos. Tente novamente mais tarde.");
+    }
+    return resultado;
+}
 
 const hhmm = t => {
     const [h, m] = t.split(":").map(Number);
@@ -62,30 +62,30 @@ function renderBarbeiros() {
 
 async function carregarConfig() {
     try {
-        const resp = await fetch("/api/config");
-        if (resp.ok) CONFIG = await resp.json();
+        CONFIG = await supabaseRPC("config_agendamentos");
+        SV = CONFIG.servicos.map(s => [s.nome, s.preco]);
+        SV.forEach(([n, p]) => {
+            svc.insertAdjacentHTML(
+                "beforeend",
+                `<label class="opt"><input type="radio" name="s" value="${n}"><span>${n}<b>R$ ${p}</b></span></label>`
+            );
+        });
+        renderBarbeiros();
+        enviar.disabled = false;
+        enviar.textContent = "Enviar pedido de agendamento";
     } catch (err) {
-        console.warn("Usando configuração padrão:", err);
+        console.error("Erro ao carregar configuração:", err);
+        $("e").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
+        enviar.disabled = true;
+        enviar.textContent = "Agendamento indisponível";
     }
-    renderBarbeiros();
 }
 
 carregarConfig();
 
-// Busca as vagas usadas de uma data (por barbeiro e turno)
-async function buscarVagas(data) {
-    try {
-        const resp = await fetch(`/api/agendamentos?data=${encodeURIComponent(data)}`);
-        const json = await resp.json();
-        return json.vagas || {};
-    } catch (err) {
-        console.warn("Não foi possível buscar as vagas:", err);
-        return {};
-    }
-}
-
 // Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam
 async function slots() {
+    const consulta = ++consultaVagas;
     sl.innerHTML = "";
 
     const v = d.value;
@@ -110,7 +110,21 @@ async function slots() {
         return;
     }
 
-    const vagas = await buscarVagas(v);
+    $("sm").textContent = "Consultando vagas...";
+    let vagas;
+    try {
+        const resultado = await supabaseRPC("vagas_agendamentos", { p_data: v });
+        if (consulta !== consultaVagas) return;
+        vagas = resultado.vagas;
+        if (!CONFIG.turnos.every(t => Number.isInteger(vagas?.[barbeiro]?.[t.id]?.restantes))) {
+            throw new Error("Resposta de vagas inválida");
+        }
+    } catch (err) {
+        if (consulta !== consultaVagas) return;
+        console.error("Erro ao consultar vagas:", err);
+        $("sm").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
+        return;
+    }
     const agora = new Date();
     const ehHoje = dt.toDateString() === agora.toDateString();
     const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
@@ -122,7 +136,7 @@ async function slots() {
         // Turno de hoje que já terminou
         if (ehHoje && hhmm(t.fim) <= minutosAgora) continue;
 
-        const restantes = vagas[barbeiro]?.[t.id]?.restantes ?? CONFIG.limite;
+        const restantes = vagas[barbeiro][t.id].restantes;
         const lotado = restantes <= 0;
         const info = lotado
             ? "Lotado"
@@ -144,9 +158,10 @@ barOpts.addEventListener("change", slots);
 
 document.querySelectorAll(".mini").forEach(b =>
     b.addEventListener("click", () => {
-        document.querySelector(
+        const servico = document.querySelector(
             `input[name=s][value="${b.dataset.s}"]`
-        ).checked = true;
+        );
+        if (servico) servico.checked = true;
 
         $("agendar").scrollIntoView({ behavior: "smooth" });
     })
@@ -167,6 +182,7 @@ $("f").addEventListener("submit", async e => {
     err.textContent = "";
     ok.hidden = true;
 
+    if (enviar.disabled) return;
     if (!s) return err.textContent = "Escolha um serviço.";
     if (!b) return err.textContent = "Escolha o barbeiro.";
     if (!d.value) return err.textContent = "Escolha o dia do atendimento.";
@@ -181,34 +197,25 @@ $("f").addEventListener("submit", async e => {
     const turno = CONFIG.turnos.find(t => t.id === h.value);
     const turnoTxt = `${turno.nome} (${turno.inicio} às ${turno.fim})`;
 
-    const preco = SV.find(([nm]) => nm === s.value)[1];
-
-    // ===== SALVA NO BANCO (SQLite) IMEDIATAMENTE =====
+    enviar.disabled = true;
+    enviar.textContent = "Reservando...";
     try {
-        const resp = await fetch("/api/agendamentos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nome: n,
-                telefone: t,
-                servico: s.value,
-                preco: preco,
-                data: dataISO,
-                barbeiro: b.value,
-                turno: h.value
-            })
+        const result = await supabaseRPC("criar_agendamento", {
+            p_nome: n,
+            p_telefone: t,
+            p_servico: s.value,
+            p_data: dataISO,
+            p_barbeiro: b.value,
+            p_turno: h.value
         });
 
-        const result = await resp.json();
-
-        if (!resp.ok) {
+        if (result.success !== true) {
             err.textContent = result.error || "Não foi possível reservar este turno.";
             slots();
             return;
         }
 
-        // ✅ Agendamento confirmado no banco!
-        const txt = `Olá, Akitas! Quero agendar: ${s.value}, dia ${dataBR} às ${h.value}. Nome: ${n}. Telefone: ${t}.`;
+        const txt = `Olá, Os Malas! Reservei ${s.value} com ${b.value}, dia ${dataBR}, turno ${turnoTxt}. Nome: ${n}. Telefone: ${t}.`;
 
         const url = `https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
 
@@ -219,12 +226,14 @@ $("f").addEventListener("submit", async e => {
             <strong>Barbeiro:</strong> ${b.value}<br>
             <strong>Dia:</strong> ${dataBR}<br>
             <strong>Turno:</strong> ${turnoTxt}<br>
-            <strong>Nome:</strong> ${n}<br>
-            <strong>Valor:</strong> R$ ${preco}</p>
+            <strong>Nome:</strong> <span data-nome></span><br>
+            <strong>Valor:</strong> R$ ${result.preco}</p>
             <p class="msg">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
             <a class="btn" href="${url}" target="_blank" rel="noopener">Abrir WhatsApp</a>
         `;
+        ok.querySelector("[data-nome]").textContent = n;
 
+        consultaVagas++;
         $("f").reset();
         $("sl").innerHTML = "";
         $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
@@ -235,7 +244,10 @@ $("f").addEventListener("submit", async e => {
 
     } catch (ex) {
         console.error("Erro ao salvar agendamento:", ex);
-        err.textContent = "Erro de conexão com o servidor. Tente novamente.";
+        err.textContent = `Não foi possível confirmar a reserva. ${ex.message} Se a conexão caiu durante o envio, confirme com a barbearia antes de repetir o pedido.`;
+    } finally {
+        enviar.disabled = false;
+        enviar.textContent = "Enviar pedido de agendamento";
     }
 });
 
