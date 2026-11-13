@@ -1,4 +1,4 @@
 /node_modules/
 
-# Backup local dos agendamentos antigos; nao publicar dados dos clientes.
+# Nao publicar backups locais com dados dos clientes.
 /agendamentos.json

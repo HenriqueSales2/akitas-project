@@ -1,8 +1,7 @@
 /* ===== Agendamento ===== */
 
-const WA = "5511999999999";
+const WA = "5511977395774";
 
-let SV = [];
 let CONFIG;
 let consultaVagas = 0;
 
@@ -15,16 +14,28 @@ const svc = $("svc"),
 
 const enviar = $("f").querySelector("button[type=submit]");
 
-const pad = n => String(n).padStart(2, "0");
+const relogio = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+});
 
-const today = new Date();
+function horarioBarbearia() {
+    const partes = Object.fromEntries(relogio.formatToParts(new Date()).map(p => [p.type, p.value]));
+    return {
+        data: `${partes.year}-${partes.month}-${partes.day}`,
+        minutos: Number(partes.hour) * 60 + Number(partes.minute)
+    };
+}
 
-d.min = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+function atualizarLimitesData() {
+    d.min = horarioBarbearia().data;
+    const max = new Date(`${d.min}T12:00:00Z`);
+    max.setUTCDate(max.getUTCDate() + 60);
+    d.max = max.toISOString().slice(0, 10);
+}
 
-const max = new Date();
-max.setDate(max.getDate() + 60);
-
-d.max = `${max.getFullYear()}-${pad(max.getMonth() + 1)}-${pad(max.getDate())}`;
+atualizarLimitesData();
 
 async function supabaseRPC(funcao, parametros = {}) {
     const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/rpc/${funcao}`, {
@@ -63,11 +74,10 @@ function renderBarbeiros() {
 async function carregarConfig() {
     try {
         CONFIG = await supabaseRPC("config_agendamentos");
-        SV = CONFIG.servicos.map(s => [s.nome, s.preco]);
-        SV.forEach(([n, p]) => {
+        CONFIG.servicos.forEach(({ nome, preco }) => {
             svc.insertAdjacentHTML(
                 "beforeend",
-                `<label class="opt"><input type="radio" name="s" value="${n}"><span>${n}<b>R$ ${p}</b></span></label>`
+                `<label class="opt"><input type="radio" name="s" value="${nome}"><span>${nome}<b>R$ ${preco}</b></span></label>`
             );
         });
         renderBarbeiros();
@@ -87,6 +97,7 @@ carregarConfig();
 async function slots() {
     const consulta = ++consultaVagas;
     sl.innerHTML = "";
+    atualizarLimitesData();
 
     const v = d.value;
     const barbeiro = document.querySelector("input[name=b]:checked")?.value;
@@ -96,9 +107,12 @@ async function slots() {
         return;
     }
 
-    const [y, m, dd] = v.split("-").map(Number),
-        dt = new Date(y, m - 1, dd),
-        w = dt.getDay();
+    if (v < d.min || v > d.max) {
+        $("sm").textContent = "Escolha uma data entre hoje e os próximos 60 dias.";
+        return;
+    }
+
+    const w = new Date(`${v}T12:00:00Z`).getUTCDay();
     // variaveis dos dias fechados da semana
     const firstDayClose = 0;
     const secondDayClose = 1;
@@ -125,16 +139,15 @@ async function slots() {
         $("sm").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
         return;
     }
-    const agora = new Date();
-    const ehHoje = dt.toDateString() === agora.toDateString();
-    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+    const agora = horarioBarbearia();
+    const ehHoje = v === agora.data;
     let any = false;
 
     for (const t of CONFIG.turnos) {
         // Sábado: sem turno da noite (fecha às 18h)
         if (w === 6 && t.id === "noite") continue;
         // Turno de hoje que já terminou
-        if (ehHoje && hhmm(t.fim) <= minutosAgora) continue;
+        if (ehHoje && hhmm(t.fim) <= agora.minutos) continue;
 
         const restantes = vagas[barbeiro][t.id].restantes;
         const lotado = restantes <= 0;

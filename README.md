@@ -4,12 +4,13 @@ Arquivos:
   index.html        estrutura da pagina
   style.css         visual
   script.js         agendamento (WhatsApp) e video de abertura
-  video/akitas.mp4  video de abertura (pode trocar mantendo o nome)
+  video/osmalas.mp4 video de abertura (pode trocar mantendo o nome)
   img/poster.jpg    imagem exibida enquanto o video carrega
   video/cortes/     os 8 videos da secao "Nossos cortes" (corte-1.mp4 ... corte-8.mp4)
   img/cortes/       miniatura (corte-N.jpg) e poster (corte-N-poster.jpg) de cada corte
 
 Para editar (em script.js): numero do WhatsApp na constante WA (formato 5511999999999).
+Mantenha esse numero consistente com o contato exibido no rodape do index.html.
 No index.html: precos, endereco, horario e Instagram.
 
 ## Agendamento: GitHub Pages + Supabase
@@ -47,7 +48,8 @@ compativeis com GitHub Pages em um subdiretorio.
 - `criar_agendamento(...)` valida os dados e determina o preco no banco, nao no navegador.
   Uma trava por data/barbeiro/turno protege o limite de 10 vagas contra reservas simultaneas.
 - O banco valida dias de funcionamento, prazo de ate 60 dias e turnos encerrados usando
-  o fuso `America/Sao_Paulo`. Sabado nao tem turno noturno.
+  o fuso `America/Sao_Paulo`; a tela usa esse mesmo fuso, independentemente do fuso do visitante.
+  Sabado nao tem turno noturno.
 - Visitantes nao podem consultar a tabela diretamente, editar ou excluir reservas.
   A administracao e feita pelo painel Supabase; nao ha CRUD administrativo publico no site.
 - RLS e permissoes protegem dados pessoais, mas nao impedem abuso de reservas anonimas.
@@ -55,9 +57,8 @@ compativeis com GitHub Pages em um subdiretorio.
 - Se a consulta de vagas falhar, o site mostra erro e nao inventa vagas disponiveis.
   O WhatsApp so e disponibilizado como confirmacao depois de a reserva ser salva.
 
-O antigo `agendamentos.json` fica apenas como backup local ignorado pelo Git.
-Nao publique esse arquivo: ele contem dados de clientes. A importacao dos registros antigos
-para o Supabase precisa ser feita separadamente pelo responsavel, sem expor o backup no site.
+O antigo `agendamentos.json` foi descartado; os registros antigos nao serao migrados.
+O nome continua no `.gitignore` para evitar a publicacao acidental de backups com dados de clientes.
 O `.gitignore` nao remove dados ja presentes no historico do Git; o antigo `.db` pode
 continuar acessivel em commits anteriores.
 
