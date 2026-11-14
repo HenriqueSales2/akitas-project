@@ -29,8 +29,10 @@ O navegador chama a Data API do Supabase diretamente com `fetch`.
 3. Confira a URL e a chave **publishable** em [supabase-config.js](supabase-config.js).
    Esses dois valores sao publicos. Nunca coloque senha, chave `sb_secret_...` ou
    `service_role` no site, nos commits ou em mensagens compartilhadas.
-4. No repositorio GitHub, abra **Settings > Pages**, selecione **Deploy from a branch**
-   e escolha a branch de publicacao e a pasta **/(root)**.
+4. No repositorio GitHub, abra **Settings > Pages** e selecione **GitHub Actions** como
+   origem da publicacao. O workflow `.github/workflows/deploy-pages.yml` publica os arquivos
+   estaticos da raiz a cada push para `main`; tambem pode ser iniciado manualmente em
+   **Actions > Publicar no GitHub Pages > Run workflow**.
    Nao e necessario conectar o GitHub dentro do painel Supabase.
 5. Abra o site e confira se os servicos e barbeiros carregam. Escolha um dia de terca
    a sabado, consulte as vagas e faca uma reserva de teste.
