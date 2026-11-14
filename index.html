@@ -56,7 +56,7 @@
   <li><div><strong>Acabamento</strong><small>Pezinho, contorno e sobrancelha · 15 min</small></div><span class="price">R$ 20</span><button class="mini" data-s="Acabamento">Agendar</button></li>
   <li><div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div><span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button></li>
   <li><div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small></div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button></li>
-  <li><div><strong>Corte + barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
+  <li><div><strong>Corte + Barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
  </ul>
 </div></section>
 
@@ -75,8 +75,8 @@
   <fieldset><legend>4. Turno</legend>
    <div class="opts turnos" id="sl"></div><p class="msg" id="sm">Escolha o barbeiro e o dia para ver os turnos.</p></fieldset>
   <fieldset><legend>5. Seus dados</legend>
-   <div class="row"><div><label class="l" for="n">Nome</label><input type="text" id="n" autocomplete="name"></div>
-   <div><label class="l" for="t">Telefone</label><input type="tel" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
+   <div class="row"><div><label class="l" for="n">Nome</label><input type="text" maxlength="120" id="n" autocomplete="name"></div>
+   <div><label class="l" for="t">Telefone</label><input type="tel" maxlength="15" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
   <button class="btn" type="submit" disabled>Carregando agendamento...</button>
   <p class="msg err" id="e" role="alert"></p>
   <div class="ok" id="ok" hidden></div>
