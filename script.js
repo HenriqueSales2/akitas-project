@@ -1,153 +1,153 @@
 /* ===== Agendamento ===== */
 
-let appointmentConfig;
-let slotRequestVersion = 0;
+let configuracaoAgendamentos;
+let versaoConsultaVagas = 0;
 
-const getById = id => document.getElementById(id);
+const obterElementoPorId = id => document.getElementById(id);
 
-const bookingServiceOptions = getById("booking-service-options"),
-  serviceCards = getById("service-cards"),
-  bookingTimeOptions = getById("booking-time-options"),
-  appointmentDateInput = getById("booking-date"),
-  barberOptions = getById("booking-barber-options");
+const opcoesServicosAgendamento = obterElementoPorId("opcoes-servicos-agendamento"),
+  listaCartoesServicos = obterElementoPorId("lista-servicos"),
+  opcoesTurnosAgendamento = obterElementoPorId("opcoes-turnos-agendamento"),
+  campoDataAgendamento = obterElementoPorId("data-agendamento"),
+  opcoesBarbeiros = obterElementoPorId("opcoes-barbeiros-agendamento");
 
-const submitButton = getById("booking-form").querySelector("button[type=submit]");
+const botaoEnviarAgendamento = obterElementoPorId("formulario-agendamento").querySelector("button[type=submit]");
 
-function formatPrice(servicePrice) {
-  if (typeof servicePrice !== "number" || !Number.isFinite(servicePrice) || servicePrice < 0) {
+function formatarPreco(precoServico) {
+  if (typeof precoServico !== "number" || !Number.isFinite(precoServico) || precoServico < 0) {
     throw new Error("Preço de serviço inválido.");
   }
-  const hasCents = !Number.isInteger(servicePrice);
+  const temCentavos = !Number.isInteger(precoServico);
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-    minimumFractionDigits: hasCents ? 2 : 0,
+    minimumFractionDigits: temCentavos ? 2 : 0,
     maximumFractionDigits: 2
-  }).format(servicePrice);
+  }).format(precoServico);
 }
 
-const barbershopClockFormatter = new Intl.DateTimeFormat("en-GB", {
+const formatadorHorarioBarbearia = new Intl.DateTimeFormat("en-GB", {
   timeZone: "America/Sao_Paulo",
   year: "numeric", month: "2-digit", day: "2-digit",
   hour: "2-digit", minute: "2-digit", hourCycle: "h23"
 });
 
-function getBarbershopLocalTime() {
-  const dateTimeParts = Object.fromEntries(
-    barbershopClockFormatter.formatToParts(new Date()).map(part => [part.type, part.value])
+function obterHorarioLocalBarbearia() {
+  const partesDataHora = Object.fromEntries(
+    formatadorHorarioBarbearia.formatToParts(new Date()).map(part => [part.type, part.value])
   );
   return {
-    date: `${dateTimeParts.year}-${dateTimeParts.month}-${dateTimeParts.day}`,
-    minutes: Number(dateTimeParts.hour) * 60 + Number(dateTimeParts.minute)
+    data: `${partesDataHora.year}-${partesDataHora.month}-${partesDataHora.day}`,
+    minutos: Number(partesDataHora.hour) * 60 + Number(partesDataHora.minute)
   };
 }
 
-function updateAppointmentDateLimits() {
-  appointmentDateInput.min = getBarbershopLocalTime().date;
-  const maximumDate = new Date(`${appointmentDateInput.min}T12:00:00Z`);
-  maximumDate.setUTCDate(maximumDate.getUTCDate() + 60);
-  appointmentDateInput.max = maximumDate.toISOString().slice(0, 10);
+function atualizarLimitesDataAgendamento() {
+  campoDataAgendamento.min = obterHorarioLocalBarbearia().data;
+  const dataMaxima = new Date(`${campoDataAgendamento.min}T12:00:00Z`);
+  dataMaxima.setUTCDate(dataMaxima.getUTCDate() + 60);
+  campoDataAgendamento.max = dataMaxima.toISOString().slice(0, 10);
 }
 
-updateAppointmentDateLimits();
+atualizarLimitesDataAgendamento();
 
-async function callSupabaseRpc(rpcName, rpcParameters = {}) {
-  const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/rpc/${rpcName}`, {
+async function chamarRpcSupabase(nomeRpc, parametrosRpc = {}) {
+  const resposta = await fetch(`${CONFIGURACAO_SUPABASE.endereco}/rest/v1/rpc/${nomeRpc}`, {
     method: "POST",
     headers: {
-      apikey: SUPABASE_CONFIG.publishableKey,
+      apikey: CONFIGURACAO_SUPABASE.chavePublica,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(rpcParameters)
+    body: JSON.stringify(parametrosRpc)
   });
-  const rpcResult = await response.json();
-  if (!response.ok) {
-    console.error(`Erro no Supabase (${rpcName}):`, rpcResult);
-    throw new Error(rpcResult.code === "22023"
-      ? rpcResult.message
+  const resultadoRpc = await resposta.json();
+  if (!resposta.ok) {
+    console.error(`Erro no Supabase (${nomeRpc}):`, resultadoRpc);
+    throw new Error(resultadoRpc.code === "22023"
+      ? resultadoRpc.message
       : "Não foi possível acessar os agendamentos. Tente novamente mais tarde.");
   }
-  return rpcResult;
+  return resultadoRpc;
 }
 
-const timeToMinutes = time => {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
+const horarioParaMinutos = horario => {
+  const [horas, minutos] = horario.split(":").map(Number);
+  return horas * 60 + minutos;
 };
 
-function renderBarberOptions() {
-  barberOptions.replaceChildren();
-  appointmentConfig.barbeiros.forEach(({ nome: barberName }) => {
-    const barberOption = document.createElement("label");
-    barberOption.className = "choice-option";
+function renderizarOpcoesBarbeiros() {
+  opcoesBarbeiros.replaceChildren();
+  configuracaoAgendamentos.barbeiros.forEach(({ nome: nomeBarbeiro }) => {
+    const opcaoBarbeiro = document.createElement("label");
+    opcaoBarbeiro.className = "opcao-selecao";
 
-    const barberInput = document.createElement("input");
-    barberInput.type = "radio";
-    barberInput.name = "barber";
-    barberInput.value = barberName;
+    const campoBarbeiro = document.createElement("input");
+    campoBarbeiro.type = "radio";
+    campoBarbeiro.name = "barbeiro";
+    campoBarbeiro.value = nomeBarbeiro;
 
-    const barberLabel = document.createElement("span");
-    barberLabel.textContent = barberName;
-    barberOption.append(barberInput, barberLabel);
-    barberOptions.append(barberOption);
+    const rotuloBarbeiro = document.createElement("span");
+    rotuloBarbeiro.textContent = nomeBarbeiro;
+    opcaoBarbeiro.append(campoBarbeiro, rotuloBarbeiro);
+    opcoesBarbeiros.append(opcaoBarbeiro);
   });
 }
 
-function renderServiceOptions(services) {
-  const serviceOptionsFragment = document.createDocumentFragment();
-  const serviceCardsFragment = document.createDocumentFragment();
+function renderizarOpcoesServicos(servicos) {
+  const fragmentoOpcoesServico = document.createDocumentFragment();
+  const fragmentoCartoesServico = document.createDocumentFragment();
 
-  services.forEach(({ nome: serviceName, descricao: serviceDescription, preco: servicePrice }) => {
-    const formattedPrice = formatPrice(servicePrice);
+  servicos.forEach(({ nome: nomeServico, descricao: descricaoServico, preco: precoServico }) => {
+    const precoFormatado = formatarPreco(precoServico);
 
-    const serviceOption = document.createElement("label");
-    serviceOption.className = "choice-option";
+    const opcaoServico = document.createElement("label");
+    opcaoServico.className = "opcao-selecao";
 
-    const serviceInput = document.createElement("input");
-    serviceInput.type = "radio";
-    serviceInput.name = "service";
-    serviceInput.value = serviceName;
+    const campoServico = document.createElement("input");
+    campoServico.type = "radio";
+    campoServico.name = "servico";
+    campoServico.value = nomeServico;
 
-    const serviceLabel = document.createElement("span");
-    serviceLabel.append(document.createTextNode(serviceName));
+    const rotuloServico = document.createElement("span");
+    rotuloServico.append(document.createTextNode(nomeServico));
 
-    const optionPrice = document.createElement("b");
-    optionPrice.textContent = formattedPrice;
-    serviceLabel.append(optionPrice);
-    serviceOption.append(serviceInput, serviceLabel);
-    serviceOptionsFragment.append(serviceOption);
+    const precoOpcao = document.createElement("b");
+    precoOpcao.textContent = precoFormatado;
+    rotuloServico.append(precoOpcao);
+    opcaoServico.append(campoServico, rotuloServico);
+    fragmentoOpcoesServico.append(opcaoServico);
 
-    const serviceCard = document.createElement("li");
-    const serviceDetails = document.createElement("div");
+    const cartaoServico = document.createElement("li");
+    const detalhesServico = document.createElement("div");
 
-    const serviceTitle = document.createElement("strong");
-    serviceTitle.textContent = serviceName;
+    const tituloServico = document.createElement("strong");
+    tituloServico.textContent = nomeServico;
 
-    const serviceDescriptionText = document.createElement("small");
-    serviceDescriptionText.textContent = serviceDescription;
-    serviceDetails.append(serviceTitle, serviceDescriptionText);
+    const textoDescricaoServico = document.createElement("small");
+    textoDescricaoServico.textContent = descricaoServico;
+    detalhesServico.append(tituloServico, textoDescricaoServico);
 
-    const cardPrice = document.createElement("span");
-    cardPrice.className = "service-price";
-    cardPrice.textContent = formattedPrice;
+    const precoCartao = document.createElement("span");
+    precoCartao.className = "preco-servico";
+    precoCartao.textContent = precoFormatado;
 
-    const bookingButton = document.createElement("button");
-    bookingButton.type = "button";
-    bookingButton.className = "service-book-button";
-    bookingButton.dataset.service = serviceName;
-    bookingButton.textContent = "Agendar";
+    const botaoAgendar = document.createElement("button");
+    botaoAgendar.type = "button";
+    botaoAgendar.className = "botao-agendar-servico";
+    botaoAgendar.dataset.servico = nomeServico;
+    botaoAgendar.textContent = "Agendar";
 
-    serviceCard.append(serviceDetails, cardPrice, bookingButton);
-    serviceCardsFragment.append(serviceCard);
+    cartaoServico.append(detalhesServico, precoCartao, botaoAgendar);
+    fragmentoCartoesServico.append(cartaoServico);
   });
 
-  bookingServiceOptions.replaceChildren(serviceOptionsFragment);
-  serviceCards.replaceChildren(serviceCardsFragment);
-  getById("service-loading-status").hidden = true;
+  opcoesServicosAgendamento.replaceChildren(fragmentoOpcoesServico);
+  listaCartoesServicos.replaceChildren(fragmentoCartoesServico);
+  obterElementoPorId("status-carregamento-servicos").hidden = true;
 }
 
-function renderCreatorCredits(credits) {
-  const isValidHttpsUrl = url => {
+function renderizarCreditosCriadores(creditos) {
+  const ehUrlHttpsValida = url => {
     try {
       return new URL(url).protocol === "https:";
     } catch {
@@ -155,264 +155,264 @@ function renderCreatorCredits(credits) {
     }
   };
   if (
-    !credits ||
-    typeof credits.nome !== "string" ||
-    !credits.nome.trim() ||
-    !isValidHttpsUrl(credits.url) ||
-    !isValidHttpsUrl(credits.imagem)
+    !creditos ||
+    typeof creditos.nome !== "string" ||
+    !creditos.nome.trim() ||
+    !ehUrlHttpsValida(creditos.url) ||
+    !ehUrlHttpsValida(creditos.imagem)
   ) {
-    console.error("Configure nome, link e imagem válidos para os créditos no Supabase.");
+    console.error("Configure nome, ancora e imagem válidos para os créditos no Supabase.");
     return;
   }
 
-  const link = document.createElement("a");
-  link.className = "creator-credit";
-  link.href = credits.url;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
+  const ancora = document.createElement("a");
+  ancora.className = "credito-criadores";
+  ancora.href = creditos.url;
+  ancora.target = "_blank";
+  ancora.rel = "noopener noreferrer";
 
   const imagem = document.createElement("img");
-  imagem.src = credits.imagem;
+  imagem.src = creditos.imagem;
   imagem.alt = "";
   imagem.width = 20;
   imagem.height = 20;
 
   const nome = document.createElement("span");
-  nome.textContent = credits.nome;
-  link.append(imagem, nome);
-  getById("creator-credit-container").replaceChildren(link);
+  nome.textContent = creditos.nome;
+  ancora.append(imagem, nome);
+  obterElementoPorId("creditos-criadores").replaceChildren(ancora);
 }
 
-async function loadAppointmentConfig() {
+async function carregarConfiguracaoAgendamentos() {
   try {
-    appointmentConfig = await callSupabaseRpc("config_agendamentos");
-    const hasValidServices = Array.isArray(appointmentConfig.servicos) &&
-      appointmentConfig.servicos.length > 0 &&
-      appointmentConfig.servicos.every(service =>
-        typeof service?.nome === "string" &&
-        service.nome.trim() &&
-        typeof service.descricao === "string" &&
-        service.descricao.trim() &&
-        typeof service.preco === "number" &&
-        Number.isFinite(service.preco) &&
-        service.preco >= 0
+    configuracaoAgendamentos = await chamarRpcSupabase("config_agendamentos");
+    const possuiServicosValidos = Array.isArray(configuracaoAgendamentos.servicos) &&
+      configuracaoAgendamentos.servicos.length > 0 &&
+      configuracaoAgendamentos.servicos.every(servico =>
+        typeof servico?.nome === "string" &&
+        servico.nome.trim() &&
+        typeof servico.descricao === "string" &&
+        servico.descricao.trim() &&
+        typeof servico.preco === "number" &&
+        Number.isFinite(servico.preco) &&
+        servico.preco >= 0
       ) &&
-      new Set(appointmentConfig.servicos.map(({ nome }) => nome)).size === appointmentConfig.servicos.length;
-    if (!hasValidServices) {
+      new Set(configuracaoAgendamentos.servicos.map(({ nome }) => nome)).size === configuracaoAgendamentos.servicos.length;
+    if (!possuiServicosValidos) {
       throw new Error("Configure nomes únicos, descrição e preço válidos para cada serviço no Supabase.");
     }
 
-    const hasValidBarberContacts = Array.isArray(appointmentConfig.barbeiros) &&
-      appointmentConfig.barbeiros.length > 0 &&
-      appointmentConfig.barbeiros.every(({ nome, tel }) =>
+    const possuiContatosValidosBarbeiros = Array.isArray(configuracaoAgendamentos.barbeiros) &&
+      configuracaoAgendamentos.barbeiros.length > 0 &&
+      configuracaoAgendamentos.barbeiros.every(({ nome, tel }) =>
         typeof nome === "string" &&
         nome.trim() &&
         typeof tel === "string" &&
         /^\d{10,15}$/.test(tel)
     );
-    if (!hasValidBarberContacts) {
+    if (!possuiContatosValidosBarbeiros) {
       throw new Error("Configure nome e telefone válidos para cada barbeiro no Supabase.");
     }
 
-    renderServiceOptions(appointmentConfig.servicos);
-    renderBarberOptions();
-    submitButton.disabled = false;
-    submitButton.textContent = "Enviar pedido de agendamento";
-  } catch (err) {
-    console.error("Erro ao carregar configuração:", err);
-    getById("service-loading-status").textContent = "Não foi possível carregar os serviços. Tente novamente mais tarde.";
-    getById("booking-error").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
-    submitButton.disabled = true;
-    submitButton.textContent = "Agendamento indisponível";
+    renderizarOpcoesServicos(configuracaoAgendamentos.servicos);
+    renderizarOpcoesBarbeiros();
+    botaoEnviarAgendamento.disabled = false;
+    botaoEnviarAgendamento.textContent = "Enviar pedido de agendamento";
+  } catch (erro) {
+    console.error("Erro ao carregar configuração:", erro);
+    obterElementoPorId("status-carregamento-servicos").textContent = "Não foi possível carregar os serviços. Tente novamente mais tarde.";
+    obterElementoPorId("erro-agendamento").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
+    botaoEnviarAgendamento.disabled = true;
+    botaoEnviarAgendamento.textContent = "Agendamento indisponível";
   }
 }
 
-loadAppointmentConfig();
+carregarConfiguracaoAgendamentos();
 
-async function loadCreatorCredits() {
+async function carregarCreditosCriadores() {
   try {
-    const credits = await callSupabaseRpc("config_creditos");
-    renderCreatorCredits(credits);
-  } catch (err) {
-    console.error("Erro ao carregar os créditos do rodapé:", err);
+    const creditos = await chamarRpcSupabase("config_creditos");
+    renderizarCreditosCriadores(creditos);
+  } catch (erro) {
+    console.error("Erro ao carregar os créditos do rodapé:", erro);
   }
 }
 
-loadCreatorCredits();
+carregarCreditosCriadores();
 
 // Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam.
-async function loadAvailableTimeSlots() {
-  const requestVersion = ++slotRequestVersion;
-  bookingTimeOptions.replaceChildren();
-  updateAppointmentDateLimits();
+async function carregarTurnosDisponiveis() {
+  const versaoRequisicao = ++versaoConsultaVagas;
+  opcoesTurnosAgendamento.replaceChildren();
+  atualizarLimitesDataAgendamento();
 
-  const selectedDate = appointmentDateInput.value;
-  const selectedBarber = document.querySelector("input[name=barber]:checked")?.value;
+  const dataSelecionada = campoDataAgendamento.value;
+  const barbeiroSelecionado = document.querySelector("input[name=barbeiro]:checked")?.value;
 
-  if (!selectedDate || !selectedBarber) {
-    getById("booking-time-message").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+  if (!dataSelecionada || !barbeiroSelecionado) {
+    obterElementoPorId("mensagem-turnos-agendamento").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
     return;
   }
 
-  if (selectedDate < appointmentDateInput.min || selectedDate > appointmentDateInput.max) {
-    getById("booking-time-message").textContent = "Escolha uma data entre hoje e os próximos 60 dias.";
+  if (dataSelecionada < campoDataAgendamento.min || dataSelecionada > campoDataAgendamento.max) {
+    obterElementoPorId("mensagem-turnos-agendamento").textContent = "Escolha uma data entre hoje e os próximos 60 dias.";
     return;
   }
 
-  const weekday = new Date(`${selectedDate}T12:00:00Z`).getUTCDay();
-  const sundayIndex = 0;
-  const mondayIndex = 1;
+  const diaSemana = new Date(`${dataSelecionada}T12:00:00Z`).getUTCDay();
+  const indiceDomingo = 0;
+  const indiceSegunda = 1;
 
-  getById("booking-date-message").textContent = "";
+  obterElementoPorId("mensagem-data-agendamento").textContent = "";
 
-  if (weekday === sundayIndex || weekday === mondayIndex) {
-    getById("booking-time-message").textContent = "Fechado neste dia. Escolha de terça a sábado.";
+  if (diaSemana === indiceDomingo || diaSemana === indiceSegunda) {
+    obterElementoPorId("mensagem-turnos-agendamento").textContent = "Fechado neste dia. Escolha de terça a sábado.";
     return;
   }
 
-  getById("booking-time-message").textContent = "Consultando vagas...";
-  let slotAvailability;
+  obterElementoPorId("mensagem-turnos-agendamento").textContent = "Consultando vagas...";
+  let disponibilidadeVagas;
   try {
-    const availabilityResponse = await callSupabaseRpc("vagas_agendamentos", { p_data: selectedDate });
-    if (requestVersion !== slotRequestVersion) return;
-    slotAvailability = availabilityResponse.vagas;
-    if (!appointmentConfig.turnos.every(timeSlot =>
-      Number.isInteger(slotAvailability?.[selectedBarber]?.[timeSlot.id]?.restantes)
+    const respostaDisponibilidade = await chamarRpcSupabase("vagas_agendamentos", { p_data: dataSelecionada });
+    if (versaoRequisicao !== versaoConsultaVagas) return;
+    disponibilidadeVagas = respostaDisponibilidade.vagas;
+    if (!configuracaoAgendamentos.turnos.every(turno =>
+      Number.isInteger(disponibilidadeVagas?.[barbeiroSelecionado]?.[turno.id]?.restantes)
     )) {
       throw new Error("Resposta de vagas inválida");
     }
-  } catch (err) {
-    if (requestVersion !== slotRequestVersion) return;
-    console.error("Erro ao consultar vagas:", err);
-    getById("booking-time-message").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
+  } catch (erro) {
+    if (versaoRequisicao !== versaoConsultaVagas) return;
+    console.error("Erro ao consultar vagas:", erro);
+    obterElementoPorId("mensagem-turnos-agendamento").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
     return;
   }
-  const currentLocalTime = getBarbershopLocalTime();
-  const isToday = selectedDate === currentLocalTime.date;
-  let hasAvailableSlots = false;
+  const horarioLocalAtual = obterHorarioLocalBarbearia();
+  const ehHoje = dataSelecionada === horarioLocalAtual.data;
+  let possuiVagasDisponiveis = false;
 
-  for (const timeSlot of appointmentConfig.turnos) {
+  for (const turno of configuracaoAgendamentos.turnos) {
     // Sábado: sem turno da noite (fecha às 18h)
-    if (weekday === 6 && timeSlot.id === "noite") continue;
+    if (diaSemana === 6 && turno.id === "noite") continue;
     // Turno de hoje que já terminou
-    if (isToday && timeToMinutes(timeSlot.fim) <= currentLocalTime.minutes) continue;
+    if (ehHoje && horarioParaMinutos(turno.fim) <= horarioLocalAtual.minutos) continue;
 
-    const remainingSlots = slotAvailability[selectedBarber][timeSlot.id].restantes;
-    const isFull = remainingSlots <= 0;
-    const availabilityLabel = isFull
+    const vagasRestantes = disponibilidadeVagas[barbeiroSelecionado][turno.id].restantes;
+    const estaLotado = vagasRestantes <= 0;
+    const textoDisponibilidade = estaLotado
       ? "Lotado"
-      : `${remainingSlots} ${remainingSlots === 1 ? "vaga" : "vagas"}`;
+      : `${vagasRestantes} ${vagasRestantes === 1 ? "vaga" : "vagas"}`;
 
-    if (!isFull) hasAvailableSlots = true;
+    if (!estaLotado) possuiVagasDisponiveis = true;
 
-    bookingTimeOptions.insertAdjacentHTML(
+    opcoesTurnosAgendamento.insertAdjacentHTML(
       "beforeend",
-      `<label class="choice-option${isFull ? " is-full" : ""}"><input type="radio" name="shift" value="${timeSlot.id}" ${isFull ? "disabled" : ""}><span><span class="time-slot-details">${timeSlot.nome}<small>${timeSlot.inicio} às ${timeSlot.fim}</small></span><b>${availabilityLabel}</b></span></label>`
+      `<label class="opcao-selecao${estaLotado ? " lotado" : ""}"><input type="radio" name="turno" value="${turno.id}" ${estaLotado ? "disabled" : ""}><span><span class="detalhes-turno">${turno.nome}<small>${turno.inicio} às ${turno.fim}</small></span><b>${textoDisponibilidade}</b></span></label>`
     );
   }
 
-  getById("booking-time-message").textContent = hasAvailableSlots
+  obterElementoPorId("mensagem-turnos-agendamento").textContent = possuiVagasDisponiveis
     ? ""
     : "Sem vagas para este barbeiro neste dia. Escolha outro barbeiro ou outro dia.";
 }
 
-appointmentDateInput.addEventListener("change", loadAvailableTimeSlots);
-barberOptions.addEventListener("change", loadAvailableTimeSlots);
+campoDataAgendamento.addEventListener("change", carregarTurnosDisponiveis);
+opcoesBarbeiros.addEventListener("change", carregarTurnosDisponiveis);
 
-serviceCards.addEventListener("click", event => {
-  const bookingButton = event.target.closest("button.service-book-button");
-  if (!bookingButton) return;
+listaCartoesServicos.addEventListener("click", evento => {
+  const botaoAgendar = evento.target.closest("button.botao-agendar-servico");
+  if (!botaoAgendar) return;
 
-  const selectedServiceInput = [...bookingServiceOptions.querySelectorAll('input[name="service"]')]
-    .find(serviceInput => serviceInput.value === bookingButton.dataset.service);
-  if (selectedServiceInput) selectedServiceInput.checked = true;
+  const campoServicoSelecionado = [...opcoesServicosAgendamento.querySelectorAll('input[name="servico"]')]
+    .find(campoServico => campoServico.value === botaoAgendar.dataset.servico);
+  if (campoServicoSelecionado) campoServicoSelecionado.checked = true;
 
-  getById("booking").scrollIntoView({ behavior: "smooth" });
+  obterElementoPorId("agendamento").scrollIntoView({ behavior: "smooth" });
 });
 
-getById("booking-form").addEventListener("submit", async event => {
-  event.preventDefault();
+obterElementoPorId("formulario-agendamento").addEventListener("submit", async evento => {
+  evento.preventDefault();
 
-  const selectedService = document.querySelector("input[name=service]:checked"),
-    selectedBarber = document.querySelector("input[name=barber]:checked"),
-    selectedShift = document.querySelector("input[name=shift]:checked"),
-    customerName = getById("customer-name").value.trim(),
-    customerPhone = getById("customer-phone").value.trim();
+  const servicoSelecionado = document.querySelector("input[name=servico]:checked"),
+    barbeiroSelecionado = document.querySelector("input[name=barbeiro]:checked"),
+    turnoSelecionado = document.querySelector("input[name=turno]:checked"),
+    nomeCliente = obterElementoPorId("nome-cliente").value.trim(),
+    telefoneCliente = obterElementoPorId("telefone-cliente").value.trim();
 
-  const errorMessage = getById("booking-error");
-  const confirmation = getById("booking-confirmation");
+  const mensagemErro = obterElementoPorId("erro-agendamento");
+  const confirmacaoAgendamento = obterElementoPorId("agendamento-confirmado");
 
-  errorMessage.textContent = "";
-  confirmation.hidden = true;
+  mensagemErro.textContent = "";
+  confirmacaoAgendamento.hidden = true;
 
-  if (submitButton.disabled) return;
-  if (!selectedService) return errorMessage.textContent = "Escolha um serviço.";
-  if (!selectedBarber) return errorMessage.textContent = "Escolha o barbeiro.";
-  const selectedBarberConfig = appointmentConfig.barbeiros.find(({ nome }) => nome === selectedBarber.value);
-  if (!selectedBarberConfig) return errorMessage.textContent = "Selecione um barbeiro válido.";
-  if (!appointmentDateInput.value) return errorMessage.textContent = "Escolha o dia do atendimento.";
-  if (!selectedShift) return errorMessage.textContent = "Escolha um turno.";
-  if (customerName.length < 2) return errorMessage.textContent = "Informe seu nome.";
-  if (customerPhone.replace(/\D/g, "").length < 10) return errorMessage.textContent = "Informe um telefone com DDD.";
+  if (botaoEnviarAgendamento.disabled) return;
+  if (!servicoSelecionado) return mensagemErro.textContent = "Escolha um serviço.";
+  if (!barbeiroSelecionado) return mensagemErro.textContent = "Escolha o barbeiro.";
+  const configuracaoBarbeiroSelecionado = configuracaoAgendamentos.barbeiros.find(({ nome }) => nome === barbeiroSelecionado.value);
+  if (!configuracaoBarbeiroSelecionado) return mensagemErro.textContent = "Selecione um barbeiro válido.";
+  if (!campoDataAgendamento.value) return mensagemErro.textContent = "Escolha o dia do atendimento.";
+  if (!turnoSelecionado) return mensagemErro.textContent = "Escolha um turno.";
+  if (nomeCliente.length < 2) return mensagemErro.textContent = "Informe seu nome.";
+  if (telefoneCliente.replace(/\D/g, "").length < 10) return mensagemErro.textContent = "Informe um telefone com DDD.";
 
-  const [year, month, day] = appointmentDateInput.value.split("-");
-  const appointmentDateISO = `${year}-${month}-${day}`;
-  const appointmentDateFormatted = `${day}/${month}/${year}`;
+  const [ano, mes, dia] = campoDataAgendamento.value.split("-");
+  const dataAgendamentoISO = `${ano}-${mes}-${dia}`;
+  const dataAgendamentoFormatada = `${dia}/${mes}/${ano}`;
 
-  const selectedTimeSlot = appointmentConfig.turnos.find(timeSlot => timeSlot.id === selectedShift.value);
-  const shiftDescription = `${selectedTimeSlot.nome} (${selectedTimeSlot.inicio} às ${selectedTimeSlot.fim})`;
+  const turnoAgendamentoSelecionado = configuracaoAgendamentos.turnos.find(turno => turno.id === turnoSelecionado.value);
+  const descricaoTurno = `${turnoAgendamentoSelecionado.nome} (${turnoAgendamentoSelecionado.inicio} às ${turnoAgendamentoSelecionado.fim})`;
 
-  submitButton.disabled = true;
-  submitButton.textContent = "Reservando...";
+  botaoEnviarAgendamento.disabled = true;
+  botaoEnviarAgendamento.textContent = "Reservando...";
   try {
-    const bookingResult = await callSupabaseRpc("criar_agendamento", {
-      p_nome: customerName,
-      p_telefone: customerPhone,
-      p_servico: selectedService.value,
-      p_data: appointmentDateISO,
-      p_barbeiro: selectedBarber.value,
-      p_turno: selectedShift.value
+    const resultadoAgendamento = await chamarRpcSupabase("criar_agendamento", {
+      p_nome: nomeCliente,
+      p_telefone: telefoneCliente,
+      p_servico: servicoSelecionado.value,
+      p_data: dataAgendamentoISO,
+      p_barbeiro: barbeiroSelecionado.value,
+      p_turno: turnoSelecionado.value
     });
 
-    if (bookingResult.success !== true) {
-      errorMessage.textContent = bookingResult.error || "Não foi possível reservar este turno.";
-      loadAvailableTimeSlots();
+    if (resultadoAgendamento.success !== true) {
+      mensagemErro.textContent = resultadoAgendamento.error || "Não foi possível reservar este turno.";
+      carregarTurnosDisponiveis();
       return;
     }
 
-    const whatsappMessage = `Olá, Os Malas! Reservei ${selectedService.value} com ${selectedBarber.value}, dia ${appointmentDateFormatted}, turno ${shiftDescription}. Nome: ${customerName}. Telefone: ${customerPhone}.`;
+    const mensagemWhatsApp = `Olá, Os Malas! Reservei ${servicoSelecionado.value} com ${barbeiroSelecionado.value}, dia ${dataAgendamentoFormatada}, turno ${descricaoTurno}. Nome: ${nomeCliente}. Telefone: ${telefoneCliente}.`;
 
-    const whatsappUrl = `https://wa.me/${selectedBarberConfig.tel}?text=${encodeURIComponent(whatsappMessage)}`;
+    const enderecoWhatsApp = `https://wa.me/${configuracaoBarbeiroSelecionado.tel}?text=${encodeURIComponent(mensagemWhatsApp)}`;
 
-    confirmation.hidden = false;
-    confirmation.innerHTML = `
+    confirmacaoAgendamento.hidden = false;
+    confirmacaoAgendamento.innerHTML = `
             <strong>✅ Agendamento confirmado!</strong>
-            <p class="form-message"><strong>Serviço:</strong> ${selectedService.value}<br>
-            <strong>Barbeiro:</strong> ${selectedBarber.value}<br>
-            <strong>Dia:</strong> ${appointmentDateFormatted}<br>
-            <strong>Turno:</strong> ${shiftDescription}<br>
-            <strong>Nome:</strong> <span data-customer-name></span><br>
-            <strong>Valor:</strong> ${formatPrice(bookingResult.preco)}</p>
-            <p class="form-message">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
-            <a class="primary-button" href="${whatsappUrl}" target="_blank" rel="noopener">Abrir WhatsApp</a>
+            <p class="mensagem-formulario"><strong>Serviço:</strong> ${servicoSelecionado.value}<br>
+            <strong>Barbeiro:</strong> ${barbeiroSelecionado.value}<br>
+            <strong>Dia:</strong> ${dataAgendamentoFormatada}<br>
+            <strong>Turno:</strong> ${descricaoTurno}<br>
+            <strong>Nome:</strong> <span data-nome-cliente></span><br>
+            <strong>Valor:</strong> ${formatarPreco(resultadoAgendamento.preco)}</p>
+            <p class="mensagem-formulario">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
+            <a class="botao-primario" href="${enderecoWhatsApp}" target="_blank" rel="noopener">Abrir WhatsApp</a>
         `;
-    confirmation.querySelector("[data-customer-name]").textContent = customerName;
+    confirmacaoAgendamento.querySelector("[data-nome-cliente]").textContent = nomeCliente;
 
-    slotRequestVersion++;
-    getById("booking-form").reset();
-    bookingTimeOptions.replaceChildren();
-    getById("booking-time-message").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
-    getById("booking-date-message").textContent = "";
+    versaoConsultaVagas++;
+    obterElementoPorId("formulario-agendamento").reset();
+    opcoesTurnosAgendamento.replaceChildren();
+    obterElementoPorId("mensagem-turnos-agendamento").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+    obterElementoPorId("mensagem-data-agendamento").textContent = "";
 
     // Abre o WhatsApp após confirmar no banco
-    window.open(whatsappUrl, "_blank", "noopener");
+    window.open(enderecoWhatsApp, "_blank", "noopener");
 
   } catch (error) {
     console.error("Erro ao salvar agendamento:", error);
-    errorMessage.textContent = `Não foi possível confirmar a reserva. ${error.message} Se a conexão caiu durante o envio, confirme com a barbearia antes de repetir o pedido.`;
+    mensagemErro.textContent = `Não foi possível confirmar a reserva. ${error.message} Se a conexão caiu durante o envio, confirme com a barbearia antes de repetir o pedido.`;
   } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = "Enviar pedido de agendamento";
+    botaoEnviarAgendamento.disabled = false;
+    botaoEnviarAgendamento.textContent = "Enviar pedido de agendamento";
   }
 });
 
@@ -420,100 +420,100 @@ getById("booking-form").addEventListener("submit", async event => {
 /* ===== Vídeo de abertura: trava a rolagem, congela no último frame e desce sozinho ===== */
 
 (() => {
-  const documentRoot = document.documentElement,
-    introSection = document.querySelector(".intro-section"),
-    introVideo = document.getElementById("intro-video"),
-    videoProgressBar = document.getElementById("intro-video-progress"),
-    skipVideoButton = document.getElementById("intro-skip-button"),
-    startVideoButton = document.getElementById("intro-start-button");
+  const raizDocumento = document.documentElement,
+    secaoAbertura = document.querySelector(".secao-abertura"),
+    videoAbertura = document.getElementById("video-abertura"),
+    barraProgressoVideo = document.getElementById("progresso-video-abertura"),
+    botaoPularVideo = document.getElementById("botao-pular-abertura"),
+    botaoIniciarVideo = document.getElementById("botao-iniciar-abertura");
 
-  let hasFinished = false;
-  let startButtonTimer;
+  let videoFinalizado = false;
+  let temporizadorBotaoIniciar;
 
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
   scrollTo(0, 0);
-  documentRoot.classList.add("is-scroll-locked");
+  raizDocumento.classList.add("rolagem-bloqueada");
 
-  const isScrollLocked = () => documentRoot.classList.contains("is-scroll-locked");
+  const rolagemBloqueada = () => raizDocumento.classList.contains("rolagem-bloqueada");
 
   ["wheel", "touchmove"].forEach(eventName =>
     addEventListener(
       eventName,
-      event => {
-        if (isScrollLocked()) event.preventDefault();
+      evento => {
+        if (rolagemBloqueada()) evento.preventDefault();
       },
       { passive: false }
     )
   );
 
-  addEventListener("keydown", event => {
+  addEventListener("keydown", evento => {
     if (
-      isScrollLocked() &&
-      [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home"].includes(event.key)
-    ) event.preventDefault();
+      rolagemBloqueada() &&
+      [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home"].includes(evento.key)
+    ) evento.preventDefault();
   });
 
-  function finishIntroVideo() {
-    if (hasFinished) return;
+  function finalizarVideoAbertura() {
+    if (videoFinalizado) return;
 
-    hasFinished = true;
-    clearTimeout(startButtonTimer);
+    videoFinalizado = true;
+    clearTimeout(temporizadorBotaoIniciar);
 
-    introSection.classList.add("is-complete");
-    videoProgressBar.style.transform = "scaleX(1)";
+    secaoAbertura.classList.add("concluido");
+    barraProgressoVideo.style.transform = "scaleX(1)";
 
     try {
-      introVideo.pause();
+      videoAbertura.pause();
     } catch (e) { }
 
     // Libera a rolagem imediatamente; a animação do copy é controlada separadamente
-    documentRoot.classList.remove("is-scroll-locked");
+    raizDocumento.classList.remove("rolagem-bloqueada");
 
-    const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefereMovimentoReduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    document.getElementById("cuts").scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth"
+    document.getElementById("cortes").scrollIntoView({
+      behavior: prefereMovimentoReduzido ? "auto" : "smooth"
     });
   }
 
-  introVideo.addEventListener("timeupdate", () => {
-    if (introVideo.duration && !hasFinished) {
-      videoProgressBar.style.transform = "scaleX(" + (introVideo.currentTime / introVideo.duration) + ")";
+  videoAbertura.addEventListener("timeupdate", () => {
+    if (videoAbertura.duration && !videoFinalizado) {
+      barraProgressoVideo.style.transform = "scaleX(" + (videoAbertura.currentTime / videoAbertura.duration) + ")";
     }
   });
 
-  introVideo.addEventListener("ended", finishIntroVideo);
+  videoAbertura.addEventListener("ended", finalizarVideoAbertura);
 
-  introVideo.addEventListener("playing", () => {
-    clearTimeout(startButtonTimer);
-    startVideoButton.hidden = true;
+  videoAbertura.addEventListener("playing", () => {
+    clearTimeout(temporizadorBotaoIniciar);
+    botaoIniciarVideo.hidden = true;
   });
 
-  introVideo.addEventListener("error", () => {
-    clearTimeout(startButtonTimer);
-    hasFinished = true;
-    documentRoot.classList.remove("is-scroll-locked");
-    introSection.classList.add("is-complete");
+  videoAbertura.addEventListener("error", () => {
+    clearTimeout(temporizadorBotaoIniciar);
+    videoFinalizado = true;
+    raizDocumento.classList.remove("rolagem-bloqueada");
+    secaoAbertura.classList.add("concluido");
   });
 
-  skipVideoButton.addEventListener("click", () => {
-    if (introVideo.duration) introVideo.currentTime = Math.max(0, introVideo.duration - .05);
-    finishIntroVideo();
+  botaoPularVideo.addEventListener("click", () => {
+    if (videoAbertura.duration) videoAbertura.currentTime = Math.max(0, videoAbertura.duration - .05);
+    finalizarVideoAbertura();
   });
 
-  startVideoButton.addEventListener("click", () => {
-    introVideo.play().catch(() => {
-      if (!hasFinished) startVideoButton.hidden = false;
+  botaoIniciarVideo.addEventListener("click", () => {
+    videoAbertura.play().catch(() => {
+      if (!videoFinalizado) botaoIniciarVideo.hidden = false;
     });
   });
 
-  startButtonTimer = setTimeout(() => {
-    if (!hasFinished) startVideoButton.hidden = false;
+  temporizadorBotaoIniciar = setTimeout(() => {
+    if (!videoFinalizado) botaoIniciarVideo.hidden = false;
   }, 1200);
 
-  introVideo.play().catch(() => {
-    if (!hasFinished) startVideoButton.hidden = false;
+  videoAbertura.play().catch(() => {
+    if (!videoFinalizado) botaoIniciarVideo.hidden = false;
   });
 })();
 
@@ -521,7 +521,7 @@ getById("booking-form").addEventListener("submit", async event => {
 /* ===== Cortes: arrastar para os lados controla o tempo do vídeo ===== */
 
 (() => {
-  const CUT_NAMES = [
+  const NOMES_CORTES = [
     "Afro com fade",
     "Degradê preciso",
     "Crop com fade",
@@ -532,247 +532,247 @@ getById("booking-form").addEventListener("submit", async event => {
     "Topete com risca"
   ];
 
-  const videoScrubber = getById("cuts-video-scrubber"),
-    cutVideo = getById("cuts-video"),
-    progressBar = getById("cuts-video-progress"),
-    interactionHint = getById("cuts-video-hint"),
-    currentCutLabel = getById("current-cut-name"),
-    cutThumbnails = getById("cuts-thumbnails");
+  const controleVideoCorte = obterElementoPorId("controle-video-cortes"),
+    videoCorte = obterElementoPorId("video-cortes"),
+    barraProgresso = obterElementoPorId("progresso-cortes"),
+    dicaInteracao = obterElementoPorId("dica-controle-cortes"),
+    nomeCorteAtual = obterElementoPorId("nome-corte-atual"),
+    miniaturasCortes = obterElementoPorId("miniaturas-cortes");
 
-  let currentCutIndex = 0,
-    targetProgress = 0,
-    currentProgress = 0,
-    dragVelocity = 0,
-    isDragging = false,
-    previousPointerX = 0,
-    previousInteractionTime = 0,
-    hasInteracted = false;
+  let indiceCorteAtual = 0,
+    progressoAlvo = 0,
+    progressoAtual = 0,
+    velocidadeArrasto = 0,
+    estaArrastando = false,
+    posicaoAnteriorPonteiroX = 0,
+    horarioAnteriorInteracao = 0,
+    jaInteragiu = false;
 
-  const clampProgress = x => Math.min(1, Math.max(0, x));
+  const limitarProgresso = valor => Math.min(1, Math.max(0, valor));
 
-  CUT_NAMES.forEach((cutName, cutIndex) =>
-    cutThumbnails.insertAdjacentHTML(
+  NOMES_CORTES.forEach((nomeCorte, indiceCorte) =>
+    miniaturasCortes.insertAdjacentHTML(
       "beforeend",
-      `<button type="button" aria-label="${cutName}"><img src="img/cortes/corte-${cutIndex + 1}.jpg" alt="" loading="lazy"></button>`
+      `<button type="button" aria-label="${nomeCorte}"><img src="img/cortes/corte-${indiceCorte + 1}.jpg" alt="" loading="lazy"></button>`
     )
   );
 
-  function loadCut(cutIndex) {
-    currentCutIndex = (cutIndex + CUT_NAMES.length) % CUT_NAMES.length;
-    targetProgress = currentProgress = dragVelocity = 0;
+  function carregarCorte(indiceCorte) {
+    indiceCorteAtual = (indiceCorte + NOMES_CORTES.length) % NOMES_CORTES.length;
+    progressoAlvo = progressoAtual = velocidadeArrasto = 0;
 
-    cutVideo.poster = `img/cortes/corte-${currentCutIndex + 1}-poster.jpg`;
-    cutVideo.src = `video/cortes/corte-${currentCutIndex + 1}.mp4`;
+    videoCorte.poster = `img/cortes/corte-${indiceCorteAtual + 1}-poster.jpg`;
+    videoCorte.src = `video/cortes/corte-${indiceCorteAtual + 1}.mp4`;
 
-    currentCutLabel.textContent = CUT_NAMES[currentCutIndex];
+    nomeCorteAtual.textContent = NOMES_CORTES[indiceCorteAtual];
 
-    [...cutThumbnails.children].forEach((thumbnailButton, thumbnailIndex) =>
-      thumbnailButton.setAttribute("aria-current", thumbnailIndex === currentCutIndex)
+    [...miniaturasCortes.children].forEach((botaoMiniatura, indiceMiniatura) =>
+      botaoMiniatura.setAttribute("aria-current", indiceMiniatura === indiceCorteAtual)
     );
 
-    const activeThumbnail = cutThumbnails.children[currentCutIndex];
+    const miniaturaAtiva = miniaturasCortes.children[indiceCorteAtual];
 
-    cutThumbnails.scrollTo({
-      left: activeThumbnail.offsetLeft - (cutThumbnails.clientWidth - activeThumbnail.offsetWidth) / 2,
+    miniaturasCortes.scrollTo({
+      left: miniaturaAtiva.offsetLeft - (miniaturasCortes.clientWidth - miniaturaAtiva.offsetWidth) / 2,
       behavior: "smooth"
     });
   }
 
-  function updateVideoFrame() {
-    if (!isDragging && Math.abs(dragVelocity) > .0002) {
-      targetProgress = clampProgress(targetProgress + dragVelocity);
-      dragVelocity *= .96;
-      if (targetProgress <= 0 || targetProgress >= 1) dragVelocity = 0;
+  function atualizarQuadroVideo() {
+    if (!estaArrastando && Math.abs(velocidadeArrasto) > .0002) {
+      progressoAlvo = limitarProgresso(progressoAlvo + velocidadeArrasto);
+      velocidadeArrasto *= .96;
+      if (progressoAlvo <= 0 || progressoAlvo >= 1) velocidadeArrasto = 0;
     }
 
     // A interpolação dita a suavidade, mas agora roda na velocidade do monitor (60hz, 120hz...)
-    currentProgress += (targetProgress - currentProgress) * .15;
+    progressoAtual += (progressoAlvo - progressoAtual) * .15;
 
-    if (Math.abs(targetProgress - currentProgress) < .0001) currentProgress = targetProgress;
+    if (Math.abs(progressoAlvo - progressoAtual) < .0001) progressoAtual = progressoAlvo;
 
-    const videoTime = currentProgress * (cutVideo.duration || 0);
+    const tempoVideo = progressoAtual * (videoCorte.duration || 0);
 
     // Atualiza o frame o mais rápido que o navegador permitir
-    if (cutVideo.readyState >= 2 && !cutVideo.seeking && Math.abs(cutVideo.currentTime - videoTime) > .01) {
-      cutVideo.currentTime = videoTime;
+    if (videoCorte.readyState >= 2 && !videoCorte.seeking && Math.abs(videoCorte.currentTime - tempoVideo) > .01) {
+      videoCorte.currentTime = tempoVideo;
     }
 
-    progressBar.style.transform = `scaleX(${currentProgress})`;
-    videoScrubber.setAttribute("aria-valuenow", Math.round(currentProgress * 100));
+    barraProgresso.style.transform = `scaleX(${progressoAtual})`;
+    controleVideoCorte.setAttribute("aria-valuenow", Math.round(progressoAtual * 100));
 
-    requestAnimationFrame(updateVideoFrame);
+    requestAnimationFrame(atualizarQuadroVideo);
   }
 
-  videoScrubber.addEventListener("pointerdown", e => {
+  controleVideoCorte.addEventListener("pointerdown", e => {
     if (e.pointerType === "mouse" && e.button) return;
 
-    isDragging = true;
-    dragVelocity = 0;
-    previousPointerX = e.clientX;
-    previousInteractionTime = performance.now();
+    estaArrastando = true;
+    velocidadeArrasto = 0;
+    posicaoAnteriorPonteiroX = e.clientX;
+    horarioAnteriorInteracao = performance.now();
 
-    videoScrubber.setPointerCapture(e.pointerId);
-    videoScrubber.classList.add("is-active");
+    controleVideoCorte.setPointerCapture(e.pointerId);
+    controleVideoCorte.classList.add("ativo");
 
-    if (!hasInteracted) {
-      hasInteracted = true;
-      interactionHint.classList.add("off");
+    if (!jaInteragiu) {
+      jaInteragiu = true;
+      dicaInteracao.classList.add("oculto");
 
-      cutVideo.play().then(() => cutVideo.pause()).catch(() => { });
+      videoCorte.play().then(() => videoCorte.pause()).catch(() => { });
     }
   });
 
-  videoScrubber.addEventListener("pointermove", pointerEvent => {
-    if (!isDragging) return;
+  controleVideoCorte.addEventListener("pointermove", eventoPonteiro => {
+    if (!estaArrastando) return;
 
     // ALTERAÇÃO 3: Aumentei o divisor de .85 para 1.4.
     // Isso deixa o arrasto menos sensível, exigindo um movimento maior para girar o vídeo.
-    const progressDelta = (pointerEvent.clientX - previousPointerX) / (videoScrubber.clientWidth * 1.4),
+    const variacaoProgresso = (eventoPonteiro.clientX - posicaoAnteriorPonteiroX) / (controleVideoCorte.clientWidth * 1.4),
       currentTime = performance.now();
 
-    previousPointerX = pointerEvent.clientX;
-    targetProgress = clampProgress(targetProgress + progressDelta);
+    posicaoAnteriorPonteiroX = eventoPonteiro.clientX;
+    progressoAlvo = limitarProgresso(progressoAlvo + variacaoProgresso);
 
     // Ajuste da velocidade para a inércia
-    dragVelocity = .8 * dragVelocity + .2 * (progressDelta / Math.max(1, currentTime - previousInteractionTime) * 16);
-    previousInteractionTime = currentTime;
+    velocidadeArrasto = .8 * velocidadeArrasto + .2 * (variacaoProgresso / Math.max(1, currentTime - horarioAnteriorInteracao) * 16);
+    horarioAnteriorInteracao = currentTime;
   });
 
-  const endPointerDrag = () => {
-    if (!isDragging) return;
+  const encerrarArrastoPonteiro = () => {
+    if (!estaArrastando) return;
 
-    isDragging = false;
-    videoScrubber.classList.remove("is-active");
+    estaArrastando = false;
+    controleVideoCorte.classList.remove("ativo");
 
-    if (performance.now() - previousInteractionTime > 80) dragVelocity = 0;
+    if (performance.now() - horarioAnteriorInteracao > 80) velocidadeArrasto = 0;
   };
 
   ["pointerup", "pointercancel", "lostpointercapture"].forEach(eventName =>
-    videoScrubber.addEventListener(eventName, endPointerDrag)
+    controleVideoCorte.addEventListener(eventName, encerrarArrastoPonteiro)
   );
 
-  videoScrubber.addEventListener("wheel", wheelEvent => {
-    if (Math.abs(wheelEvent.deltaX) <= Math.abs(wheelEvent.deltaY)) return;
+  controleVideoCorte.addEventListener("wheel", eventoRolagem => {
+    if (Math.abs(eventoRolagem.deltaX) <= Math.abs(eventoRolagem.deltaY)) return;
 
-    wheelEvent.preventDefault();
+    eventoRolagem.preventDefault();
 
-    hasInteracted = true;
-    interactionHint.classList.add("off");
+    jaInteragiu = true;
+    dicaInteracao.classList.add("oculto");
 
     // Suavizado também no scroll do mouse
-    targetProgress = clampProgress(targetProgress - wheelEvent.deltaX / (videoScrubber.clientWidth * 1.8));
+    progressoAlvo = limitarProgresso(progressoAlvo - eventoRolagem.deltaX / (controleVideoCorte.clientWidth * 1.8));
   }, { passive: false });
 
-  videoScrubber.addEventListener("keydown", keyboardEvent => {
-    const progressStep = {
+  controleVideoCorte.addEventListener("keydown", eventoTeclado => {
+    const passoProgresso = {
       ArrowRight: .05,
       ArrowLeft: -.05
-    }[keyboardEvent.key];
+    }[eventoTeclado.key];
 
-    if (progressStep !== undefined) {
-      keyboardEvent.preventDefault();
+    if (passoProgresso !== undefined) {
+      eventoTeclado.preventDefault();
 
-      hasInteracted = true;
-      interactionHint.classList.add("off");
+      jaInteragiu = true;
+      dicaInteracao.classList.add("oculto");
 
-      targetProgress = clampProgress(targetProgress + progressStep);
+      progressoAlvo = limitarProgresso(progressoAlvo + passoProgresso);
     }
   });
 
-  getById("previous-cut").addEventListener("click", () => loadCut(currentCutIndex - 1));
-  getById("next-cut").addEventListener("click", () => loadCut(currentCutIndex + 1));
+  obterElementoPorId("corte-anterior").addEventListener("click", () => carregarCorte(indiceCorteAtual - 1));
+  obterElementoPorId("proximo-corte").addEventListener("click", () => carregarCorte(indiceCorteAtual + 1));
 
-  [...cutThumbnails.children].forEach((thumbnailButton, cutIndex) =>
-    thumbnailButton.addEventListener("click", () => loadCut(cutIndex))
+  [...miniaturasCortes.children].forEach((botaoMiniatura, indiceCorte) =>
+    botaoMiniatura.addEventListener("click", () => carregarCorte(indiceCorte))
   );
 
-  function nudgeScrubber() {
-    if (hasInteracted || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  function orientarControleCorte() {
+    if (jaInteragiu || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const animationStartTime = performance.now();
+    const horarioInicioAnimacao = performance.now();
 
-    (function animateNudge(timestamp) {
-      const progress = (timestamp - animationStartTime) / 1600;
+    (function animarOrientacao(marcaTempo) {
+      const progresso = (marcaTempo - horarioInicioAnimacao) / 1600;
 
-      if (hasInteracted || isDragging) return;
-      if (progress >= 1) {
-        targetProgress = 0;
+      if (jaInteragiu || estaArrastando) return;
+      if (progresso >= 1) {
+        progressoAlvo = 0;
         return;
       }
 
-      targetProgress = .22 * Math.sin(Math.PI * progress);
-      requestAnimationFrame(animateNudge);
-    })(animationStartTime);
+      progressoAlvo = .22 * Math.sin(Math.PI * progresso);
+      requestAnimationFrame(animarOrientacao);
+    })(horarioInicioAnimacao);
   }
 
-  loadCut(0);
-  updateVideoFrame();
+  carregarCorte(0);
+  atualizarQuadroVideo();
 
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver((entries, observer) => {
-      if (entries[0].isIntersecting) {
-        cutVideo.preload = "auto";
-        cutVideo.load();
-        observer.disconnect();
+    new IntersectionObserver((entradas, observador) => {
+      if (entradas[0].isIntersecting) {
+        videoCorte.preload = "auto";
+        videoCorte.load();
+        observador.disconnect();
       }
-    }, { rootMargin: "700px" }).observe(videoScrubber);
+    }, { rootMargin: "700px" }).observe(controleVideoCorte);
 
-    new IntersectionObserver((entries, observer) => {
-      if (entries[0].isIntersecting) {
-        observer.disconnect();
+    new IntersectionObserver((entradas, observador) => {
+      if (entradas[0].isIntersecting) {
+        observador.disconnect();
 
-        cutVideo.readyState >= 2
-          ? nudgeScrubber()
-          : cutVideo.addEventListener("loadeddata", nudgeScrubber, { once: true });
+        videoCorte.readyState >= 2
+          ? orientarControleCorte()
+          : videoCorte.addEventListener("loadeddata", orientarControleCorte, { once: true });
       }
-    }, { threshold: .6 }).observe(videoScrubber);
+    }, { threshold: .6 }).observe(controleVideoCorte);
 
   } else {
-    cutVideo.preload = "auto";
-    cutVideo.load();
+    videoCorte.preload = "auto";
+    videoCorte.load();
   }
 })();
 
-/* ===== Menu fixo: link da seção atual ===== */
+/* ===== Menu fixo: ancora da seção atual ===== */
 (() => {
-  const navigationLinks = [...document.querySelectorAll(".section-navigation a")];
-  const setCurrentNavigationLink = sectionId => {
-    navigationLinks.forEach(link => {
-      link.setAttribute("aria-current", String(link.getAttribute("href") === `#${sectionId}`));
+  const linksNavegacao = [...document.querySelectorAll(".navegacao-secoes a")];
+  const definirLinkNavegacaoAtual = idSecao => {
+    linksNavegacao.forEach(ancora => {
+      ancora.setAttribute("aria-current", String(ancora.getAttribute("href") === `#${idSecao}`));
     });
   };
-  const isAtPageEnd = () =>
+  const chegouAoFinalDaPagina = () =>
     window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1;
-  const updateContactNavigationLink = () => {
-    if (isAtPageEnd()) setCurrentNavigationLink("contact");
+  const atualizarLinkContato = () => {
+    if (chegouAoFinalDaPagina()) definirLinkNavegacaoAtual("contato");
   };
-  const sectionObserver = "IntersectionObserver" in window
-    ? new IntersectionObserver(entries => {
-      if (isAtPageEnd()) {
-        setCurrentNavigationLink("contact");
+  const observadorSecoes = "IntersectionObserver" in window
+    ? new IntersectionObserver(entradas => {
+      if (chegouAoFinalDaPagina()) {
+        definirLinkNavegacaoAtual("contato");
         return;
       }
 
-      entries.forEach(entry => {
-        if (entry.isIntersecting) setCurrentNavigationLink(entry.target.id);
+      entradas.forEach(entrada => {
+        if (entrada.isIntersecting) definirLinkNavegacaoAtual(entrada.target.id);
       });
     }, { rootMargin: "-45% 0px -50% 0px" })
     : null;
 
-  navigationLinks.forEach(link => {
-    link.addEventListener("click", () => {
-      setCurrentNavigationLink(link.getAttribute("href").slice(1));
+  linksNavegacao.forEach(ancora => {
+    ancora.addEventListener("click", () => {
+      definirLinkNavegacaoAtual(ancora.getAttribute("href").slice(1));
     });
 
-    const targetSection = document.querySelector(link.getAttribute("href"));
-    if (targetSection && sectionObserver) {
-      sectionObserver.observe(targetSection);
+    const secaoAlvo = document.querySelector(ancora.getAttribute("href"));
+    if (secaoAlvo && observadorSecoes) {
+      observadorSecoes.observe(secaoAlvo);
     }
   });
 
-  window.addEventListener("scroll", updateContactNavigationLink, { passive: true });
-  window.addEventListener("resize", updateContactNavigationLink);
-  updateContactNavigationLink();
+  window.addEventListener("scroll", atualizarLinkContato, { passive: true });
+  window.addEventListener("resize", atualizarLinkContato);
+  atualizarLinkContato();
 })();
 
 /* ===== Jacaré entra andando na seção Serviços =====
@@ -780,182 +780,182 @@ getById("booking-form").addEventListener("submit", async event => {
    Safari e iPhone não leem transparência em WebM; lá usamos video/croc.mp4, que guarda a cor (metade de cima)
    e a transparência (metade de baixo), e juntamos as duas num canvas. */
 (() => {
-  const animationContainer = document.getElementById("alligator-animation"), frameCanvas = document.getElementById("alligator-frame-canvas"), fallbackVideo = document.getElementById("alligator-mp4-video"), transparentVideo = document.getElementById("alligator-webm-video");
-  if (!animationContainer || !frameCanvas || !fallbackVideo) return;
-  const videoFrameDimensions = { width: 782, height: 600, visibleStartX: 245, visibleEndX: 713 };            // tamanho do recorte e onde o jacaré para (em px do vídeo)
-  const userAgent = navigator.userAgent;
-  const requiresOpaqueVideo = /iP(hone|ad|od)/.test(userAgent) || (/^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(userAgent));
-  const supportsTransparentWebm = !!transparentVideo && !requiresOpaqueVideo && !!transparentVideo.canPlayType && transparentVideo.canPlayType('video/webm; codecs="vp9"') !== "";
-  const activeVideo = supportsTransparentWebm ? transparentVideo : fallbackVideo;
-  if (!supportsTransparentWebm && transparentVideo) transparentVideo.remove();
-  frameCanvas.width = videoFrameDimensions.width; frameCanvas.height = videoFrameDimensions.height;
-  const frameContext = frameCanvas.getContext("2d");
-  const offscreenCanvas = document.createElement("canvas"); offscreenCanvas.width = videoFrameDimensions.width; offscreenCanvas.height = videoFrameDimensions.height * 2;
-  const offscreenContext = offscreenCanvas.getContext("2d", { willReadFrequently: true });
-  const frameImageData = frameContext.createImageData(videoFrameDimensions.width, videoFrameDimensions.height);
-  const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let hasStarted = false;
-  if (supportsTransparentWebm) frameCanvas.style.display = "none";
+  const areaAnimacaoJacare = document.getElementById("animacao-jacare"), telaQuadrosJacare = document.getElementById("tela-quadros-jacare"), videoAlternativoJacare = document.getElementById("video-mp4-jacare"), videoTransparenteJacare = document.getElementById("video-webm-jacare");
+  if (!areaAnimacaoJacare || !telaQuadrosJacare || !videoAlternativoJacare) return;
+  const dimensoesQuadroVideo = { largura: 782, altura: 600, inicioXVisivel: 245, fimXVisivel: 713 };            // tamanho do recorte e onde o jacaré para (em px do vídeo)
+  const agenteUsuario = navigator.userAgent;
+  const requerVideoOpaco = /iP(hone|ad|od)/.test(agenteUsuario) || (/^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(agenteUsuario));
+  const suportaWebmTransparente = !!videoTransparenteJacare && !requerVideoOpaco && !!videoTransparenteJacare.canPlayType && videoTransparenteJacare.canPlayType('video/webm; codecs="vp9"') !== "";
+  const videoAtivo = suportaWebmTransparente ? videoTransparenteJacare : videoAlternativoJacare;
+  if (!suportaWebmTransparente && videoTransparenteJacare) videoTransparenteJacare.remove();
+  telaQuadrosJacare.width = dimensoesQuadroVideo.largura; telaQuadrosJacare.height = dimensoesQuadroVideo.altura;
+  const contextoQuadro = telaQuadrosJacare.getContext("2d");
+  const telaAuxiliar = document.createElement("canvas"); telaAuxiliar.width = dimensoesQuadroVideo.largura; telaAuxiliar.height = dimensoesQuadroVideo.altura * 2;
+  const contextoAuxiliar = telaAuxiliar.getContext("2d", { willReadFrequently: true });
+  const dadosImagemQuadro = contextoQuadro.createImageData(dimensoesQuadroVideo.largura, dimensoesQuadroVideo.altura);
+  const prefereMovimentoReduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let animacaoIniciada = false;
+  if (suportaWebmTransparente) telaQuadrosJacare.style.display = "none";
 
   /* posiciona o jacaré: começa colado na borda esquerda da tela (ele "entra" por ali) e para na coluna do título */
-  function positionAnimation() {
-    const containerHeight = animationContainer.clientHeight;
-    const scaleFactor = containerHeight / videoFrameDimensions.height;
-    const containerBounds = animationContainer.getBoundingClientRect();
-    const visibleCrocodileWidth =
-      (videoFrameDimensions.visibleEndX - videoFrameDimensions.visibleStartX) * scaleFactor;
-    const visibleStartOffset = videoFrameDimensions.visibleStartX * scaleFactor;
-    const desiredLeftPosition =
-      containerBounds.left + (animationContainer.clientWidth - visibleCrocodileWidth) / 2;
-    const animationLeft = Math.min(0, desiredLeftPosition - visibleStartOffset);
+  function posicionarAnimacao() {
+    const alturaContainer = areaAnimacaoJacare.clientHeight;
+    const fatorEscala = alturaContainer / dimensoesQuadroVideo.altura;
+    const limitesContainer = areaAnimacaoJacare.getBoundingClientRect();
+    const larguraJacareVisivel =
+      (dimensoesQuadroVideo.fimXVisivel - dimensoesQuadroVideo.inicioXVisivel) * fatorEscala;
+    const deslocamentoInicioVisivel = dimensoesQuadroVideo.inicioXVisivel * fatorEscala;
+    const posicaoEsquerdaDesejada =
+      limitesContainer.left + (areaAnimacaoJacare.clientWidth - larguraJacareVisivel) / 2;
+    const posicaoEsquerdaAnimacao = Math.min(0, posicaoEsquerdaDesejada - deslocamentoInicioVisivel);
 
-    for (const mediaElement of [frameCanvas, supportsTransparentWebm ? transparentVideo : null]) {
-      if (!mediaElement) continue;
+    for (const elementoMidia of [telaQuadrosJacare, suportaWebmTransparente ? videoTransparenteJacare : null]) {
+      if (!elementoMidia) continue;
 
-      mediaElement.style.width = videoFrameDimensions.width * scaleFactor + "px";
-      mediaElement.style.height = containerHeight + "px";
-      mediaElement.style.left = animationLeft - containerBounds.left + "px";
+      elementoMidia.style.width = dimensoesQuadroVideo.largura * fatorEscala + "px";
+      elementoMidia.style.height = alturaContainer + "px";
+      elementoMidia.style.left = posicaoEsquerdaAnimacao - limitesContainer.left + "px";
     }
 
-    animationContainer.style.setProperty(
-      "--alligator-position-x",
-      animationLeft - containerBounds.left + visibleStartOffset + visibleCrocodileWidth / 2 + "px"
+    areaAnimacaoJacare.style.setProperty(
+      "--posicao-x-jacare",
+      posicaoEsquerdaAnimacao - limitesContainer.left + deslocamentoInicioVisivel + larguraJacareVisivel / 2 + "px"
     );
-    animationContainer.style.setProperty("--alligator-shadow-width", visibleCrocodileWidth * 1.05 + "px");
+    areaAnimacaoJacare.style.setProperty("--largura-sombra-jacare", larguraJacareVisivel * 1.05 + "px");
   }
-  positionAnimation(); addEventListener("resize", positionAnimation); addEventListener("load", positionAnimation);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(positionAnimation);
+  posicionarAnimacao(); addEventListener("resize", posicionarAnimacao); addEventListener("load", posicionarAnimacao);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(posicionarAnimacao);
 
-  function showFinalPose() { animationContainer.classList.add("arrived") }
-  function renderStaticFallback() {                                    // sem animação: mostra só o jacaré já parado
-    const fallbackImage = new Image();
-    fallbackImage.onload = () => {
-      if (transparentVideo) transparentVideo.style.display = "none";
-      frameCanvas.style.display = "";
-      frameContext.clearRect(0, 0, videoFrameDimensions.width, videoFrameDimensions.height);
-      frameContext.drawImage(fallbackImage, 0, 0, videoFrameDimensions.width, videoFrameDimensions.height);
-      showFinalPose();
+  function mostrarPoseFinal() { areaAnimacaoJacare.classList.add("jacare-posicionado") }
+  function renderizarFallbackEstatico() {                                    // sem animação: mostra só o jacaré já parado
+    const imagemFallback = new Image();
+    imagemFallback.onload = () => {
+      if (videoTransparenteJacare) videoTransparenteJacare.style.display = "none";
+      telaQuadrosJacare.style.display = "";
+      contextoQuadro.clearRect(0, 0, dimensoesQuadroVideo.largura, dimensoesQuadroVideo.altura);
+      contextoQuadro.drawImage(imagemFallback, 0, 0, dimensoesQuadroVideo.largura, dimensoesQuadroVideo.altura);
+      mostrarPoseFinal();
     };
-    fallbackImage.src = "img/croc-final.webp";
+    imagemFallback.src = "img/croc-final.webp";
   }
-  function drawVideoFrame() {
-    offscreenContext.drawImage(activeVideo, 0, 0, videoFrameDimensions.width, videoFrameDimensions.height * 2);
-    const sourcePixelData =
-      offscreenContext.getImageData(0, 0, videoFrameDimensions.width, videoFrameDimensions.height * 2).data;
-    const outputPixelData = frameImageData.data;
-    const pixelCount = videoFrameDimensions.width * videoFrameDimensions.height * 4;
+  function desenharQuadroVideo() {
+    contextoAuxiliar.drawImage(videoAtivo, 0, 0, dimensoesQuadroVideo.largura, dimensoesQuadroVideo.altura * 2);
+    const dadosPixelsOrigem =
+      contextoAuxiliar.getImageData(0, 0, dimensoesQuadroVideo.largura, dimensoesQuadroVideo.altura * 2).data;
+    const dadosPixelsSaida = dadosImagemQuadro.data;
+    const quantidadePixels = dimensoesQuadroVideo.largura * dimensoesQuadroVideo.altura * 4;
 
-    for (let pixelIndex = 0; pixelIndex < pixelCount; pixelIndex += 4) {
-      outputPixelData[pixelIndex] = sourcePixelData[pixelIndex];
-      outputPixelData[pixelIndex + 1] = sourcePixelData[pixelIndex + 1];
-      outputPixelData[pixelIndex + 2] = sourcePixelData[pixelIndex + 2];
-      outputPixelData[pixelIndex + 3] = sourcePixelData[pixelCount + pixelIndex];
+    for (let indicePixel = 0; indicePixel < quantidadePixels; indicePixel += 4) {
+      dadosPixelsSaida[indicePixel] = dadosPixelsOrigem[indicePixel];
+      dadosPixelsSaida[indicePixel + 1] = dadosPixelsOrigem[indicePixel + 1];
+      dadosPixelsSaida[indicePixel + 2] = dadosPixelsOrigem[indicePixel + 2];
+      dadosPixelsSaida[indicePixel + 3] = dadosPixelsOrigem[quantidadePixels + indicePixel];
     }
-    frameContext.putImageData(frameImageData, 0, 0);
+    contextoQuadro.putImageData(dadosImagemQuadro, 0, 0);
   }
-  const scheduleNextFrame = callback =>
-    "requestVideoFrameCallback" in activeVideo
-      ? activeVideo.requestVideoFrameCallback(callback)
-      : requestAnimationFrame(callback);
-  function renderAnimationFrame() {
+  const agendarProximoQuadro = funcaoRetorno =>
+    "requestVideoFrameCallback" in videoAtivo
+      ? videoAtivo.requestVideoFrameCallback(funcaoRetorno)
+      : requestAnimationFrame(funcaoRetorno);
+  function renderizarQuadroAnimacao() {
     try {
-      if (activeVideo.readyState >= 2) drawVideoFrame();
-      if (activeVideo.ended) { drawVideoFrame(); showFinalPose(); return }
+      if (videoAtivo.readyState >= 2) desenharQuadroVideo();
+      if (videoAtivo.ended) { desenharQuadroVideo(); mostrarPoseFinal(); return }
     } catch {
-      renderStaticFallback();
+      renderizarFallbackEstatico();
       return;
     }
-    scheduleNextFrame(renderAnimationFrame);
+    agendarProximoQuadro(renderizarQuadroAnimacao);
   }
-  function startAnimation() {
-    if (hasStarted) return; hasStarted = true;
-    if (prefersReducedMotion) { renderStaticFallback(); return }
-    activeVideo.preload = "auto";
-    activeVideo.addEventListener("ended", () => { if (!supportsTransparentWebm) { try { drawVideoFrame() } catch (e) { renderStaticFallback(); return } } showFinalPose() }, { once: true });
-    activeVideo.addEventListener("error", renderStaticFallback, { once: true });
-    const playPromise = activeVideo.play();
-    if (supportsTransparentWebm) {
-      if (playPromise && playPromise.catch) playPromise.catch(renderStaticFallback);
+  function iniciarAnimacao() {
+    if (animacaoIniciada) return; animacaoIniciada = true;
+    if (prefereMovimentoReduzido) { renderizarFallbackEstatico(); return }
+    videoAtivo.preload = "auto";
+    videoAtivo.addEventListener("ended", () => { if (!suportaWebmTransparente) { try { desenharQuadroVideo() } catch (e) { renderizarFallbackEstatico(); return } } mostrarPoseFinal() }, { once: true });
+    videoAtivo.addEventListener("error", renderizarFallbackEstatico, { once: true });
+    const promessaReproducao = videoAtivo.play();
+    if (suportaWebmTransparente) {
+      if (promessaReproducao && promessaReproducao.catch) promessaReproducao.catch(renderizarFallbackEstatico);
       return;
     }
-    if (playPromise && playPromise.then) {
-      playPromise.then(() => scheduleNextFrame(renderAnimationFrame), renderStaticFallback);
+    if (promessaReproducao && promessaReproducao.then) {
+      promessaReproducao.then(() => agendarProximoQuadro(renderizarQuadroAnimacao), renderizarFallbackEstatico);
     } else {
-      scheduleNextFrame(renderAnimationFrame);
+      agendarProximoQuadro(renderizarQuadroAnimacao);
     }
   }
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver((entries, observer) => {
-      if (!entries[0].isIntersecting) return;
+    new IntersectionObserver((entradas, observador) => {
+      if (!entradas[0].isIntersecting) return;
 
-      activeVideo.preload = "auto";
-      activeVideo.load();
-      observer.disconnect();
-    }, { rootMargin: "800px" }).observe(animationContainer);
-    new IntersectionObserver((entries, observer) => {
-      if (!entries[0].isIntersecting) return;
+      videoAtivo.preload = "auto";
+      videoAtivo.load();
+      observador.disconnect();
+    }, { rootMargin: "800px" }).observe(areaAnimacaoJacare);
+    new IntersectionObserver((entradas, observador) => {
+      if (!entradas[0].isIntersecting) return;
 
-      observer.disconnect();
-      startAnimation();
-    }, { threshold: .6 }).observe(animationContainer);
-  } else startAnimation();
+      observador.disconnect();
+      iniciarAnimacao();
+    }, { threshold: .6 }).observe(areaAnimacaoJacare);
+  } else iniciarAnimacao();
 })();
 
 /* ===== Revelar blocos ao rolar ===== */
 (() => {
-  const revealElements = document.querySelectorAll(".reveal-on-scroll,section h2,section .section-description");
-  revealElements.forEach(element => element.classList.add("reveal-on-scroll"));
+  const elementosRevelacao = document.querySelectorAll(".revelar-ao-rolar,section h2,section .descricao-secao");
+  elementosRevelacao.forEach(elemento => elemento.classList.add("revelar-ao-rolar"));
   if (!("IntersectionObserver" in window)) {
-    revealElements.forEach(element => element.classList.add("is-visible"));
+    elementosRevelacao.forEach(elemento => elemento.classList.add("visivel"));
     return;
   }
 
-  const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
+  const observadorRevelacao = new IntersectionObserver(entradas => entradas.forEach(entrada => {
+    if (!entrada.isIntersecting) return;
 
-    entry.target.classList.add("is-visible");
-    revealObserver.unobserve(entry.target);
+    entrada.target.classList.add("visivel");
+    observadorRevelacao.unobserve(entrada.target);
   }), { threshold: .12, rootMargin: "0px 0px -6% 0px" });
-  revealElements.forEach(element => revealObserver.observe(element));
+  elementosRevelacao.forEach(elemento => observadorRevelacao.observe(elemento));
 })();
 
 
 /* ===== Barbeiro selecionado entra em cena (vídeo) ===== */
 (function () {
-  const barberVideoStage = document.getElementById("barber-video-stage");
-  if (!barberVideoStage) return;
-  const normalizeBarberName = barberName =>
-    (barberName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const barberVideos = [...barberVideoStage.querySelectorAll(".barber-video")];
-  let activeBarberVideo = null;
+  const palcoVideoBarbeiro = document.getElementById("palco-video-barbeiro");
+  if (!palcoVideoBarbeiro) return;
+  const normalizarNomeBarbeiro = nomeBarbeiro =>
+    (nomeBarbeiro || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const videosBarbeiros = [...palcoVideoBarbeiro.querySelectorAll(".video-barbeiro")];
+  let videoBarbeiroAtivo = null;
 
-  function showBarberVideo(barberName) {
-    const nextBarberVideo = barberVideos.find(video =>
-      normalizeBarberName(video.dataset.barber) === normalizeBarberName(barberName)
+  function mostrarVideoBarbeiro(nomeBarbeiro) {
+    const proximoVideoBarbeiro = videosBarbeiros.find(video =>
+      normalizarNomeBarbeiro(video.dataset.barbeiro) === normalizarNomeBarbeiro(nomeBarbeiro)
     ) || null;
-    if (nextBarberVideo === activeBarberVideo) return;
+    if (proximoVideoBarbeiro === videoBarbeiroAtivo) return;
 
     // quem estava em cena sai suavemente e pausa depois da transição
-    if (activeBarberVideo) {
-      const previousBarberVideo = activeBarberVideo;
-      previousBarberVideo.classList.remove("is-active");
-      setTimeout(() => { if (!previousBarberVideo.classList.contains("is-active")) previousBarberVideo.pause(); }, 1000);
+    if (videoBarbeiroAtivo) {
+      const videoBarbeiroAnterior = videoBarbeiroAtivo;
+      videoBarbeiroAnterior.classList.remove("ativo");
+      setTimeout(() => { if (!videoBarbeiroAnterior.classList.contains("ativo")) videoBarbeiroAnterior.pause(); }, 1000);
     }
 
-    activeBarberVideo = nextBarberVideo;
-    if (nextBarberVideo) {
-      nextBarberVideo.currentTime = 0;
-      const playPromise = nextBarberVideo.play();
-      if (playPromise && playPromise.catch) playPromise.catch(() => { });
+    videoBarbeiroAtivo = proximoVideoBarbeiro;
+    if (proximoVideoBarbeiro) {
+      proximoVideoBarbeiro.currentTime = 0;
+      const promessaReproducao = proximoVideoBarbeiro.play();
+      if (promessaReproducao && promessaReproducao.catch) promessaReproducao.catch(() => { });
       // força o navegador a registrar o estado inicial antes de animar a entrada
-      requestAnimationFrame(() => requestAnimationFrame(() => nextBarberVideo.classList.add("is-active")));
+      requestAnimationFrame(() => requestAnimationFrame(() => proximoVideoBarbeiro.classList.add("ativo")));
     }
   }
 
-  document.getElementById("booking-barber-options").addEventListener("change", event => {
-    if (event.target.name === "barber") showBarberVideo(event.target.value);
+  document.getElementById("opcoes-barbeiros-agendamento").addEventListener("change", evento => {
+    if (evento.target.name === "barbeiro") mostrarVideoBarbeiro(evento.target.value);
   });
 
   // depois de enviar o formulário (reset), o barbeiro sai de cena
-  document.getElementById("booking-form").addEventListener("reset", () => setTimeout(() => showBarberVideo(null), 0));
+  document.getElementById("formulario-agendamento").addEventListener("reset", () => setTimeout(() => mostrarVideoBarbeiro(null), 0));
 })();

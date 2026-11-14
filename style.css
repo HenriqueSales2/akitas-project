@@ -1,17 +1,17 @@
 :root {
-  --color-background: #071312;
-  --color-background-section: #0d2320;
-  --color-background-light: #f2f6f5;
-  --color-accent: #27d3b5;
-  --color-accent-dark: #0b7868;
-  --color-text: #eef4f3;
-  --color-text-muted: rgba(238, 244, 243, .68);
-  --color-border: rgba(255, 255, 255, .13);
-  --color-text-dark: #0b1a18;
-  --color-text-dark-muted: #51635f;
-  --color-border-light: #d5e0dd;
-  --font-display: 'Big Shoulders Display', 'Impact', sans-serif;
-  --font-body: 'Figtree', system-ui, sans-serif;
+  --cor-fundo: #071312;
+  --cor-fundo-secao: #0d2320;
+  --cor-fundo-claro: #f2f6f5;
+  --cor-destaque: #27d3b5;
+  --cor-destaque-escuro: #0b7868;
+  --cor-texto: #eef4f3;
+  --cor-texto-suave: rgba(238, 244, 243, .68);
+  --cor-borda: rgba(255, 255, 255, .13);
+  --cor-texto-escuro: #0b1a18;
+  --cor-texto-escuro-suave: #51635f;
+  --cor-borda-clara: #d5e0dd;
+  --fonte-titulos: 'Big Shoulders Display', 'Impact', sans-serif;
+  --fonte-corpo: 'Figtree', system-ui, sans-serif;
   color-scheme: dark;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -31,9 +31,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-background);
-  color: var(--color-text);
-  font: 400 17px/1.65 var(--font-body)
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: 400 17px/1.65 var(--fonte-corpo)
 }
 
 a {
@@ -41,11 +41,11 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-accent);
+  outline: 3px solid var(--cor-destaque);
   outline-offset: 3px
 }
 
-.page-container {
+.container-pagina {
   width: min(1080px, 100% - 40px);
   margin-inline: auto
 }
@@ -55,29 +55,29 @@ section {
 }
 
 h2 {
-  font: 800 clamp(40px, 6.5vw, 64px)/1 var(--font-display);
+  font: 800 clamp(40px, 6.5vw, 64px)/1 var(--fonte-titulos);
   text-transform: uppercase;
   letter-spacing: .01em;
   margin: 0 0 16px
 }
 
-.section-description {
-  color: var(--color-text-muted);
+.descricao-secao {
+  color: var(--cor-texto-suave);
   max-width: 44ch;
   margin: 0
 }
 
-.section-light {
-  background: var(--color-background-light);
-  color: var(--color-text-dark)
+.secao-clara {
+  background: var(--cor-fundo-claro);
+  color: var(--cor-texto-escuro)
 }
 
-.section-light .section-description {
-  color: var(--color-text-dark-muted)
+.secao-clara .descricao-secao {
+  color: var(--cor-texto-escuro-suave)
 }
 
-.section-light :focus-visible {
-  outline-color: var(--color-accent-dark)
+.secao-clara :focus-visible {
+  outline-color: var(--cor-destaque-escuro)
 }
 
 /* cabeçalho */
@@ -92,102 +92,102 @@ header {
   -webkit-backdrop-filter: blur(14px)
 }
 
-header .page-container {
+header .container-pagina {
   display: flex;
   align-items: center;
   gap: 8px 28px
 }
 
-.site-logo {
+.logo-site {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   margin-right: auto;
-  font: 800 24px/1 var(--font-display);
+  font: 800 24px/1 var(--fonte-titulos);
   letter-spacing: .06em;
   text-decoration: none;
   text-transform: uppercase
 }
 
-.site-logo img,
-.footer-brand img {
+.logo-site img,
+.marca-rodape img {
   display: block;
   border-radius: 50%
 }
 
-.site-logo em,
-.footer-brand em {
+.logo-site em,
+.marca-rodape em {
   font-style: normal;
   font-weight: 600;
-  color: var(--color-accent);
+  color: var(--cor-destaque);
   letter-spacing: .06em
 }
 
-.section-navigation {
+.navegacao-secoes {
   display: flex;
   gap: 4px
 }
 
-.section-navigation a {
-  font: 500 15px var(--font-body);
+.navegacao-secoes a {
+  font: 500 15px var(--fonte-corpo);
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 8px;
-  color: var(--color-text-muted);
+  color: var(--cor-texto-suave);
   transition: color .2s
 }
 
-.section-navigation a:hover,
-.section-navigation a[aria-current="true"] {
+.navegacao-secoes a:hover,
+.navegacao-secoes a[aria-current="true"] {
   color: #fff
 }
 
-.booking-navigation-link {
-  background: var(--color-accent);
-  color: var(--color-background);
+.link-menu-agendamento {
+  background: var(--cor-destaque);
+  color: var(--cor-fundo);
   padding: 10px 22px;
   border-radius: 999px;
-  font: 700 15px var(--font-body);
+  font: 700 15px var(--fonte-corpo);
   text-decoration: none
 }
 
-html.is-scroll-locked,
-html.is-scroll-locked body {
+html.rolagem-bloqueada,
+html.rolagem-bloqueada body {
   overflow: hidden;
   touch-action: none;
   overscroll-behavior: none
 }
 
-html.is-scroll-locked .booking-navigation-link,
-html.is-scroll-locked .section-navigation {
+html.rolagem-bloqueada .link-menu-agendamento,
+html.rolagem-bloqueada .navegacao-secoes {
   visibility: hidden
 }
 
 @media(max-width:700px) {
-  .section-navigation {
+  .navegacao-secoes {
     display: none
   }
 
-  .site-logo {
+  .logo-site {
     font-size: 20px
   }
 
-  .site-logo img {
+  .logo-site img {
     width: 36px;
     height: 36px
   }
 
-  .booking-navigation-link {
+  .link-menu-agendamento {
     padding: 9px 18px
   }
 
-  .choice-option span {
+  .opcao-selecao span {
     flex-direction: column;
   }
 }
 
 /* abertura */
-.intro-section {
+.secao-abertura {
   position: relative;
   height: 100svh;
   min-height: 480px;
@@ -195,7 +195,7 @@ html.is-scroll-locked .section-navigation {
   background: #020707
 }
 
-.intro-background {
+.fundo-abertura {
   position: absolute;
   inset: -40px;
   background: center/cover;
@@ -203,12 +203,12 @@ html.is-scroll-locked .section-navigation {
   display: none
 }
 
-.intro-media {
+.midia-abertura {
   position: absolute;
   inset: 0
 }
 
-.intro-media video {
+.midia-abertura video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -217,16 +217,16 @@ html.is-scroll-locked .section-navigation {
 }
 
 @media(min-aspect-ratio:1/1) {
-  .intro-background {
+  .fundo-abertura {
     display: block
   }
 
-  .intro-media video {
+  .midia-abertura video {
     object-fit: contain
   }
 }
 
-.intro-section::after {
+.secao-abertura::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -237,11 +237,11 @@ html.is-scroll-locked .section-navigation {
   background: linear-gradient(0deg, rgba(7, 19, 18, .97), rgba(7, 19, 18, .62) 45%, transparent 75%)
 }
 
-.intro-section.is-complete::after {
+.secao-abertura.concluido::after {
   opacity: 1
 }
 
-.intro-content {
+.conteudo-abertura {
   position: absolute;
   inset: auto 0 0;
   z-index: 2;
@@ -255,13 +255,13 @@ html.is-scroll-locked .section-navigation {
   justify-items: start
 }
 
-.intro-section.is-complete .intro-content {
+.secao-abertura.concluido .conteudo-abertura {
   opacity: 1;
   transform: none;
   pointer-events: auto
 }
 
-.crest {
+.brasao {
   width: min(130px, 17svh);
   height: auto;
   display: block;
@@ -269,67 +269,67 @@ html.is-scroll-locked .section-navigation {
   mask-image: radial-gradient(closest-side, #000 88%, transparent 100%)
 }
 
-.intro-content h1 {
+.conteudo-abertura h1 {
   margin: 0 0 6px;
   display: flex;
   flex-direction: column;
-  font: 800 clamp(56px, 13vw, 112px)/.92 var(--font-display);
+  font: 800 clamp(56px, 13vw, 112px)/.92 var(--fonte-titulos);
   text-transform: uppercase;
   letter-spacing: .01em
 }
 
-.intro-content h1 .brand-subtitle {
+.conteudo-abertura h1 .subtitulo-marca {
   font-weight: 600;
-  color: var(--color-accent)
+  color: var(--cor-destaque)
 }
 
-.intro-content p {
+.conteudo-abertura p {
   max-width: 36ch;
   color: #d3e0de;
   font-size: 19px;
   margin: 0 0 22px
 }
 
-.intro-actions {
+.acoes-abertura {
   display: flex;
   gap: 12px;
   flex-wrap: wrap
 }
 
-.primary-button {
+.botao-primario {
   display: inline-block;
   border: 0;
   cursor: pointer;
-  font: 700 16px var(--font-body);
+  font: 700 16px var(--fonte-corpo);
   padding: 15px 30px;
   border-radius: 999px;
   text-decoration: none;
-  background: var(--color-accent);
-  color: var(--color-background);
+  background: var(--cor-destaque);
+  color: var(--cor-fundo);
   transition: transform .2s, background .2s
 }
 
-.primary-button:hover {
+.botao-primario:hover {
   background: #4fe3c8;
   transform: translateY(-1px)
 }
 
-.primary-button.secondary-button {
+.botao-primario.botao-secundario {
   background: transparent;
   color: #fff;
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55)
 }
 
-.primary-button.secondary-button:hover {
+.botao-primario.botao-secundario:hover {
   background: rgba(255, 255, 255, .08);
   box-shadow: inset 0 0 0 1.5px #fff
 }
 
-.intro-skip-button,
-.intro-start-button {
+.botao-pular-abertura,
+.botao-iniciar-abertura {
   position: absolute;
   z-index: 3;
-  font: 600 15px var(--font-body);
+  font: 600 15px var(--fonte-corpo);
   color: #fff;
   background: rgba(7, 19, 18, .65);
   border: 1px solid rgba(255, 255, 255, .35);
@@ -339,96 +339,96 @@ html.is-scroll-locked .section-navigation {
   backdrop-filter: blur(6px)
 }
 
-.intro-skip-button {
+.botao-pular-abertura {
   right: 20px;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px))
 }
 
-.intro-start-button {
+.botao-iniciar-abertura {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   font-size: 18px;
   padding: 16px 30px;
-  background: var(--color-accent);
-  color: var(--color-background);
+  background: var(--cor-destaque);
+  color: var(--cor-fundo);
   border: 0
 }
 
-.intro-section.is-complete .intro-skip-button {
+.secao-abertura.concluido .botao-pular-abertura {
   display: none
 }
 
-.intro-progress-bar {
+.barra-progresso-abertura {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
   height: 3px;
-  background: var(--color-accent);
+  background: var(--cor-destaque);
   transform: scaleX(0);
   transform-origin: left;
   z-index: 3;
   transition: opacity .4s
 }
 
-.intro-section.is-complete .intro-progress-bar {
+.secao-abertura.concluido .barra-progresso-abertura {
   opacity: 0
 }
 
 @media(min-width:860px) {
-  .intro-content {
+  .conteudo-abertura {
     grid-template-columns: 1fr auto;
     align-items: end;
     column-gap: 40px
   }
 
-  .intro-content .crest {
+  .conteudo-abertura .brasao {
     grid-column: 2;
     grid-row: 1/span 3;
     width: clamp(240px, 28vw, 360px);
     justify-self: end
   }
 
-  .intro-content h1,
-  .intro-content p,
-  .intro-content .intro-actions {
+  .conteudo-abertura h1,
+  .conteudo-abertura p,
+  .conteudo-abertura .acoes-abertura {
     grid-column: 1
   }
 }
 
 @media(max-height:560px) {
-  .crest {
+  .brasao {
     display: none
   }
 }
 
 /* cortes */
-.cuts-layout {
+.layout-cortes {
   display: grid;
   gap: 36px;
   align-items: center;
   grid-template-columns: minmax(0, 1fr)
 }
 
-.cuts-layout>* {
+.layout-cortes>* {
   min-width: 0
 }
 
 @media(min-width:860px) {
-  .cuts-layout {
+  .layout-cortes {
     grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
     gap: 64px
   }
 }
 
-.cuts-player {
+.reprodutor-cortes {
   width: 100%;
   max-width: 680px;
   margin-inline: auto
 }
 
-.cuts-video-scrubber {
+.controle-video-cortes {
   position: relative;
   aspect-ratio: 16/9;
   width: 100%;
@@ -436,7 +436,7 @@ html.is-scroll-locked .section-navigation {
   border-radius: 20px;
   overflow: hidden;
   background: #020707;
-  box-shadow: 0 0 0 1px var(--color-border), 0 30px 60px -30px rgba(0, 0, 0, .8);
+  box-shadow: 0 0 0 1px var(--cor-borda), 0 30px 60px -30px rgba(0, 0, 0, .8);
   touch-action: pan-y;
   overscroll-behavior-x: contain;
   cursor: grab;
@@ -445,11 +445,11 @@ html.is-scroll-locked .section-navigation {
   -webkit-touch-callout: none
 }
 
-.cuts-video-scrubber.is-active {
+.controle-video-cortes.ativo {
   cursor: grabbing
 }
 
-.cuts-video-scrubber video {
+.controle-video-cortes video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -457,7 +457,7 @@ html.is-scroll-locked .section-navigation {
   pointer-events: none
 }
 
-.cuts-video-hint {
+.dica-controle-cortes {
   position: absolute;
   left: 50%;
   bottom: 26px;
@@ -469,24 +469,24 @@ html.is-scroll-locked .section-navigation {
   border-radius: 999px;
   background: rgba(7, 19, 18, .7);
   backdrop-filter: blur(8px);
-  font: 600 15px var(--font-body);
+  font: 600 15px var(--fonte-corpo);
   transition: opacity .4s;
   pointer-events: none;
   white-space: nowrap
 }
 
-.cuts-video-hint span {
-  color: var(--color-accent);
+.dica-controle-cortes span {
+  color: var(--cor-destaque);
   font-size: 22px;
   line-height: 1;
   animation: nudge 1.4s ease-in-out infinite
 }
 
-.cuts-video-hint span:first-child {
+.dica-controle-cortes span:first-child {
   animation-direction: reverse
 }
 
-.cuts-video-hint.off {
+.dica-controle-cortes.oculto {
   opacity: 0
 }
 
@@ -496,22 +496,22 @@ html.is-scroll-locked .section-navigation {
   }
 }
 
-.cuts-video-progress-track {
+.trilha-progresso-cortes {
   position: absolute;
   inset: auto 0 0;
   height: 3px;
   background: rgba(255, 255, 255, .18)
 }
 
-.cuts-video-progress-track i {
+.trilha-progresso-cortes i {
   display: block;
   height: 100%;
-  background: var(--color-accent);
+  background: var(--cor-destaque);
   transform: scaleX(0);
   transform-origin: left
 }
 
-.cuts-caption {
+.legenda-corte {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -519,36 +519,36 @@ html.is-scroll-locked .section-navigation {
   margin: 16px 0
 }
 
-.cuts-caption strong {
+.legenda-corte strong {
   flex: 1;
   min-width: 0;
-  font: 800 clamp(24px, 6.5vw, 30px)/1.05 var(--font-display);
+  font: 800 clamp(24px, 6.5vw, 30px)/1.05 var(--fonte-titulos);
   text-transform: uppercase;
   letter-spacing: .04em;
   text-align: center;
   overflow-wrap: anywhere
 }
 
-.cuts-navigation-button {
+.botao-navegacao-corte {
   flex: none;
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1.5px solid var(--color-border);
+  border: 1.5px solid var(--cor-borda);
   background: none;
   color: #fff;
-  font: 400 26px/1 var(--font-body);
+  font: 400 26px/1 var(--fonte-corpo);
   cursor: pointer;
   padding: 0 0 3px;
   transition: border-color .2s, color .2s
 }
 
-.cuts-navigation-button:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent)
+.botao-navegacao-corte:hover {
+  border-color: var(--cor-destaque);
+  color: var(--cor-destaque)
 }
 
-.cuts-thumbnails {
+.miniaturas-cortes {
   display: flex;
   gap: 10px;
   width: 100%;
@@ -560,11 +560,11 @@ html.is-scroll-locked .section-navigation {
   scrollbar-width: none
 }
 
-.cuts-thumbnails::-webkit-scrollbar {
+.miniaturas-cortes::-webkit-scrollbar {
   display: none
 }
 
-.cuts-thumbnails button {
+.miniaturas-cortes button {
   flex: none;
   scroll-snap-align: center;
   width: 60px;
@@ -579,12 +579,12 @@ html.is-scroll-locked .section-navigation {
   transition: opacity .2s, border-color .2s
 }
 
-.cuts-thumbnails button[aria-current="true"] {
-  border-color: var(--color-accent);
+.miniaturas-cortes button[aria-current="true"] {
+  border-color: var(--cor-destaque);
   opacity: 1
 }
 
-.cuts-thumbnails img {
+.miniaturas-cortes img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -592,82 +592,82 @@ html.is-scroll-locked .section-navigation {
 }
 
 @media(max-height:520px) and (orientation:landscape) {
-  .cuts-video-scrubber {
+  .controle-video-cortes {
     max-height: none;
     width: min(100%, 60svh*1.78)
   }
 }
 
 @media(max-width:859px) {
-  .cuts-layout {
+  .layout-cortes {
     gap: 28px
   }
 }
 
 /* serviços */
-.services-layout {
+.layout-servicos {
   display: grid;
   gap: 40px
 }
 
 @media(min-width:860px) {
-  .services-layout {
+  .layout-servicos {
     grid-template-columns: .8fr 1.2fr;
     gap: 64px;
     align-items: start
   }
 }
 
-.service-cards {
+.lista-servicos {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--color-border-light)
+  border-top: 1px solid var(--cor-borda-clara)
 }
 
-.service-loading-status {
+.status-carregamento-servicos {
   margin: 0 0 12px
 }
 
-.service-cards li {
+.lista-servicos li {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 8px 24px;
   align-items: center;
   padding: 26px 0;
-  border-bottom: 1px solid var(--color-border-light)
+  border-bottom: 1px solid var(--cor-borda-clara)
 }
 
-.service-cards strong {
-  font: 700 22px var(--font-body);
+.lista-servicos strong {
+  font: 700 22px var(--fonte-corpo);
   display: block;
   margin-bottom: 2px
 }
 
-.service-cards small {
-  color: var(--color-text-dark-muted);
+.lista-servicos small {
+  color: var(--cor-texto-escuro-suave);
   font-size: 15px
 }
 
-.service-price {
-  font: 800 38px/1 var(--font-display);
-  color: var(--color-accent-dark);
+.preco-servico {
+  font: 800 38px/1 var(--fonte-titulos);
+  color: var(--cor-destaque-escuro);
   letter-spacing: .01em
 }
 
-.service-book-button {
+.botao-agendar-servico {
   background: none;
-  border: 1.5px solid var(--color-text-dark);
-  color: var(--color-text-dark);
-  font: 700 14px var(--font-body);
+  border: 1.5px solid var(--cor-texto-escuro);
+  color: var(--cor-texto-escuro);
+  font: 700 14px var(--fonte-corpo);
   cursor: pointer;
   padding: 9px 18px;
   border-radius: 999px;
   transition: background .2s, color .2s
 }
 
-.service-book-button:hover {
-  background: var(--color-text-dark);
+.botao-agendar-servico:hover {
+  background: var(--cor-texto-escuro);
   color: #fff
 }
 
@@ -676,37 +676,37 @@ html.is-scroll-locked .section-navigation {
     padding: 72px 0
   }
 
-  .service-cards li {
+  .lista-servicos li {
     grid-template-columns: 1fr auto;
     gap: 4px 16px
   }
 
-  .service-cards li>div {
+  .lista-servicos li>div {
     grid-column: 1/-1;
     min-width: 0
   }
 
-  .service-price {
+  .preco-servico {
     font-size: 32px
   }
 
-  .service-book-button {
+  .botao-agendar-servico {
     justify-self: end
   }
 }
 
 /* agendamento */
-.booking-section {
-  background: var(--color-background-section)
+.secao-agendamento {
+  background: var(--cor-fundo-secao)
 }
 
-.booking-layout {
+.layout-agendamento {
   display: grid;
   gap: 40px
 }
 
 @media(min-width:860px) {
-  .booking-layout {
+  .layout-agendamento {
     grid-template-columns: .8fr 1.2fr;
     gap: 64px
   }
@@ -719,57 +719,57 @@ fieldset {
 }
 
 legend,
-label.form-label {
-  font: 600 16px var(--font-body);
+label.rotulo-campo {
+  font: 600 16px var(--fonte-corpo);
   margin-bottom: 10px;
   padding: 0;
   display: block
 }
 
-.choice-list {
+.lista-opcoes {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.choice-option input {
+.opcao-selecao input {
   position: absolute;
   opacity: 0
 }
 
-.choice-option span {
+.opcao-selecao span {
   display: flex;
   justify-content: space-between;
   gap: 8px;
   padding: 14px 16px;
-  border: 1.5px solid var(--color-border);
+  border: 1.5px solid var(--cor-borda);
   border-radius: 12px;
   cursor: pointer;
   background: rgba(255, 255, 255, .04);
   transition: border-color .2s, background .2s
 }
 
-.choice-option span:hover {
+.opcao-selecao span:hover {
   border-color: rgba(255, 255, 255, .35)
 }
 
-.choice-option input:checked+span {
-  border-color: var(--color-accent);
+.opcao-selecao input:checked+span {
+  border-color: var(--cor-destaque);
   background: rgba(39, 211, 181, .14)
 }
 
-.choice-option input:focus-visible+span {
-  outline: 3px solid var(--color-accent);
+.opcao-selecao input:focus-visible+span {
+  outline: 3px solid var(--cor-destaque);
   outline-offset: 2px
 }
 
-.time-slot-list {
+.lista-turnos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
   gap: 8px
 }
 
-.time-slot-list .choice-option span {
+.lista-turnos .opcao-selecao span {
   justify-content: center;
   padding: 11px 6px
 }
@@ -778,10 +778,10 @@ input[type=date],
 input[type=text],
 input[type=tel] {
   width: 100%;
-  font: 400 17px var(--font-body);
+  font: 400 17px var(--fonte-corpo);
   color: #fff;
   background: rgba(255, 255, 255, .05);
-  border: 1.5px solid var(--color-border);
+  border: 1.5px solid var(--cor-borda);
   border-radius: 12px;
   padding: 13px 14px
 }
@@ -790,85 +790,85 @@ input[type=date] {
   color-scheme: dark
 }
 
-.form-row {
+.linha-formulario {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.form-message {
+.mensagem-formulario {
   min-height: 1.5em;
-  color: var(--color-text-muted);
+  color: var(--cor-texto-suave);
   margin: 0
 }
 
-.form-error {
+.erro-formulario {
   color: #ff9d90
 }
 
-.booking-confirmation {
-  border: 1.5px solid var(--color-accent);
+.agendamento-confirmado {
+  border: 1.5px solid var(--cor-destaque);
   border-radius: 14px;
   padding: 18px;
   margin-top: 20px;
   background: rgba(39, 211, 181, .08)
 }
 
-.booking-section .primary-button {
+.secao-agendamento .botao-primario {
   margin-top: 4px
 }
 
 /* rodapé */
 footer {
   padding: 72px 0 48px;
-  border-top: 1px solid var(--color-border)
+  border-top: 1px solid var(--cor-borda)
 }
 
-.footer-brand {
+.marca-rodape {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 40px;
-  font: 800 28px/1 var(--font-display);
+  font: 800 28px/1 var(--fonte-titulos);
   letter-spacing: .06em;
   text-transform: uppercase
 }
 
-.footer-contact-information {
+.informacoes-contato {
   display: grid;
   gap: 32px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.footer-contact-information h3 {
-  font: 600 15px var(--font-body);
+.informacoes-contato h3 {
+  font: 600 15px var(--fonte-corpo);
   margin: 0 0 8px;
-  color: var(--color-accent)
+  color: var(--cor-destaque)
 }
 
-.footer-contact-information p {
+.informacoes-contato p {
   margin: 0;
-  color: var(--color-text-muted)
+  color: var(--cor-texto-suave)
 }
 
-.footer-copyright {
+.direitos-autorais {
   margin-top: 56px;
-  color: var(--color-text-muted);
+  color: var(--cor-texto-suave);
   font-size: 14px
 }
 
-.footer-copyright #creator-credit-container {
+.direitos-autorais #creditos-criadores {
   display: inline-flex;
   vertical-align: middle
 }
 
-.footer-copyright .creator-credit {
+.direitos-autorais .credito-criadores {
   display: inline-flex;
   align-items: center;
   gap: 6px
 }
 
-.footer-copyright .creator-credit img {
+.direitos-autorais .credito-criadores img {
   width: 20px;
   height: 20px;
   border-radius: 4px;
@@ -880,23 +880,23 @@ footer {
     scroll-behavior: auto
   }
 
-  .primary-button,
-  .intro-content {
+  .botao-primario,
+  .conteudo-abertura {
     transition: none
   }
 
-  .cuts-video-hint span {
+  .dica-controle-cortes span {
     animation: none
   }
 }
 
 /* ===== v3: mais escuro, mais refinado, pensado para celular ===== */
 :root {
-  --color-background: #020706;
-  --color-background-section: #050f0e;
-  --color-card: rgba(255, 255, 255, .035);
-  --color-border: rgba(255, 255, 255, .1);
-  --color-glow: rgba(39, 211, 181, .14)
+  --cor-fundo: #020706;
+  --cor-fundo-secao: #050f0e;
+  --cor-cartao: rgba(255, 255, 255, .035);
+  --cor-borda: rgba(255, 255, 255, .1);
+  --cor-brilho: rgba(39, 211, 181, .14)
 }
 
 html {
@@ -906,14 +906,14 @@ html {
 body {
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-  background: var(--color-background)
+  background: var(--cor-fundo)
 }
 
 button,
-.primary-button,
-.booking-navigation-link,
-.service-book-button,
-.cuts-navigation-button,
+.botao-primario,
+.link-menu-agendamento,
+.botao-agendar-servico,
+.botao-navegacao-corte,
 input {
   touch-action: manipulation
 }
@@ -929,23 +929,23 @@ section::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(700px 380px at 85% 0%, var(--color-glow), transparent 70%)
+  background: radial-gradient(700px 380px at 85% 0%, var(--cor-brilho), transparent 70%)
 }
 
-.section-light {
+.secao-clara {
   background: #030a09;
-  color: var(--color-text)
+  color: var(--cor-texto)
 }
 
-.section-light .section-description {
-  color: var(--color-text-muted)
+.secao-clara .descricao-secao {
+  color: var(--cor-texto-suave)
 }
 
-.section-light :focus-visible {
-  outline-color: var(--color-accent)
+.secao-clara :focus-visible {
+  outline-color: var(--cor-destaque)
 }
 
-.booking-section {
+.secao-agendamento {
   background: linear-gradient(180deg, #030a09, #061413)
 }
 
@@ -964,72 +964,72 @@ h2::after {
   height: 3px;
   border-radius: 3px;
   margin-top: 14px;
-  background: linear-gradient(90deg, var(--color-accent), transparent)
+  background: linear-gradient(90deg, var(--cor-destaque), transparent)
 }
 
-.service-cards {
+.lista-servicos {
   border: 0;
   display: grid;
   gap: 12px
 }
 
-.service-cards li {
+.lista-servicos li {
   padding: 22px 24px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cor-borda);
   border-radius: 20px;
-  background: var(--color-card);
+  background: var(--cor-cartao);
   transition: border-color .25s, background .25s
 }
 
-.service-cards li:hover {
+.lista-servicos li:hover {
   border-color: rgba(39, 211, 181, .5);
   background: rgba(39, 211, 181, .05)
 }
 
-.service-cards small {
-  color: var(--color-text-muted)
+.lista-servicos small {
+  color: var(--cor-texto-suave)
 }
 
-.service-price {
-  color: var(--color-accent);
+.preco-servico {
+  color: var(--cor-destaque);
   text-shadow: 0 0 24px rgba(39, 211, 181, .35)
 }
 
-.service-book-button {
+.botao-agendar-servico {
   border-color: rgba(255, 255, 255, .4);
   color: #fff;
   min-height: 44px
 }
 
-.service-book-button:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-background)
+.botao-agendar-servico:hover {
+  background: var(--cor-destaque);
+  border-color: var(--cor-destaque);
+  color: var(--cor-fundo)
 }
 
-#booking form {
+#agendamento form {
   padding: 32px 28px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cor-borda);
   border-radius: 28px;
   background: linear-gradient(160deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
   box-shadow: 0 40px 80px -40px #000
 }
 
-.choice-option span {
+.opcao-selecao span {
   min-height: 48px;
   align-items: center;
   border-radius: 14px
 }
 
-.choice-option input:disabled+span {
+.opcao-selecao input:disabled+span {
   opacity: .28;
   text-decoration: line-through;
   cursor: not-allowed;
   background: transparent
 }
 
-.choice-option input:disabled+span:hover {
-  border-color: var(--color-border)
+.opcao-selecao input:disabled+span:hover {
+  border-color: var(--cor-borda)
 }
 
 input[type=date],
@@ -1039,29 +1039,29 @@ input[type=tel] {
   font-size: 16px
 }
 
-.primary-button {
+.botao-primario {
   min-height: 50px;
   box-shadow: 0 10px 30px -10px rgba(39, 211, 181, .55)
 }
 
-.primary-button.secondary-button {
+.botao-primario.botao-secundario {
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55)
 }
 
-#booking .primary-button {
+#agendamento .botao-primario {
   width: 100%
 }
 
-.booking-confirmation .primary-button {
+.agendamento-confirmado .botao-primario {
   text-align: center
 }
 
-.cuts-video-scrubber {
+.controle-video-cortes {
   border-radius: 24px;
-  box-shadow: 0 0 0 1px var(--color-border), 0 40px 80px -30px #000, 0 0 80px -30px var(--color-glow)
+  box-shadow: 0 0 0 1px var(--cor-borda), 0 40px 80px -30px #000, 0 0 80px -30px var(--cor-brilho)
 }
 
-.intro-section::after {
+.secao-abertura::after {
   background: linear-gradient(0deg, #020706, rgba(2, 7, 6, .65) 45%, transparent 78%)
 }
 
@@ -1070,7 +1070,7 @@ footer {
 }
 
 @media(max-width:600px) {
-  .page-container {
+  .container-pagina {
     width: calc(100% - 32px)
   }
 
@@ -1078,72 +1078,72 @@ footer {
     padding: 64px 0
   }
 
-  #booking form {
+  #agendamento form {
     padding: 24px 18px;
     border-radius: 22px
   }
 
-  .service-cards li {
+  .lista-servicos li {
     padding: 18px;
     border-radius: 16px
   }
 
-  .time-slot-list {
+  .lista-turnos {
     grid-template-columns: repeat(4, 1fr)
   }
 
-  .choice-list {
+  .lista-opcoes {
     grid-template-columns: 1fr 1fr
   }
 
-  .intro-actions .primary-button {
+  .acoes-abertura .botao-primario {
     flex: 1 1 100%;
     text-align: center
   }
 
-  .intro-content p {
+  .conteudo-abertura p {
     font-size: 17px
   }
 }
 
 @media(max-width:360px) {
-  .time-slot-list {
+  .lista-turnos {
     grid-template-columns: repeat(3, 1fr)
   }
 
-  .choice-list {
+  .lista-opcoes {
     grid-template-columns: 1fr
   }
 }
 
 /* ===== v4: metal escuro com raios turquesa (estilo da logo) ===== */
 :root {
-  --color-background: #080d10;
-  --color-background-section: #0b1115;
-  --color-accent: #2ff0dc;
-  --color-glow: rgba(47, 240, 220, .16);
-  --color-border: rgba(190, 215, 222, .16);
-  --background-chrome: linear-gradient(180deg, #fff 0%, #c4d0d3 48%, #f2f7f8 54%, #84949a 100%);
-  --background-metal: linear-gradient(160deg, #1c262b, #0e1418)
+  --cor-fundo: #080d10;
+  --cor-fundo-secao: #0b1115;
+  --cor-destaque: #2ff0dc;
+  --cor-brilho: rgba(47, 240, 220, .16);
+  --cor-borda: rgba(190, 215, 222, .16);
+  --fundo-cromado: linear-gradient(180deg, #fff 0%, #c4d0d3 48%, #f2f7f8 54%, #84949a 100%);
+  --fundo-metal: linear-gradient(160deg, #1c262b, #0e1418)
 }
 
 body {
-  background: radial-gradient(900px 500px at 12% 0%, rgba(47, 240, 220, .07), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 1px, transparent 1px 4px), var(--color-background)
+  background: radial-gradient(900px 500px at 12% 0%, rgba(47, 240, 220, .07), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 1px, transparent 1px 4px), var(--cor-fundo)
 }
 
-.section-light,
-.section-dark {
+.secao-clara,
+.secao-escura {
   background: transparent;
-  color: var(--color-text)
+  color: var(--cor-texto)
 }
 
-.section-dark,
-.section-light,
-.booking-section {
+.secao-escura,
+.secao-clara,
+.secao-agendamento {
   border-top: 1px solid rgba(47, 240, 220, .22)
 }
 
-.booking-section {
+.secao-agendamento {
   background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .35))
 }
 
@@ -1153,12 +1153,12 @@ footer {
 }
 
 section::before {
-  background: radial-gradient(640px 360px at 88% 0%, var(--color-glow), transparent 70%)
+  background: radial-gradient(640px 360px at 88% 0%, var(--cor-brilho), transparent 70%)
 }
 
 h2,
-.intro-content h1 .brand-name {
-  background: var(--background-chrome);
+.conteudo-abertura h1 .nome-marca {
+  background: var(--fundo-cromado);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1168,21 +1168,21 @@ h2,
 h2::after {
   height: 4px;
   width: 72px;
-  box-shadow: 0 0 14px var(--color-accent)
+  box-shadow: 0 0 14px var(--cor-destaque)
 }
 
-.intro-content h1 .brand-subtitle {
-  color: var(--color-accent);
+.conteudo-abertura h1 .subtitulo-marca {
+  color: var(--cor-destaque);
   text-shadow: 0 0 28px rgba(47, 240, 220, .55)
 }
 
-.site-logo img,
-.footer-brand img {
+.logo-site img,
+.marca-rodape img {
   border-radius: 12px;
   box-shadow: 0 0 0 1px rgba(190, 215, 222, .3), 0 0 16px rgba(47, 240, 220, .35)
 }
 
-.crest {
+.brasao {
   width: min(170px, 22svh);
   -webkit-mask-image: radial-gradient(closest-side, #000 82%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 82%, transparent 100%);
@@ -1190,91 +1190,91 @@ h2::after {
 }
 
 @media(min-width:860px) {
-  .intro-content .crest {
+  .conteudo-abertura .brasao {
     width: clamp(300px, 34vw, 460px)
   }
 }
 
-.primary-button {
-  background: linear-gradient(180deg, #6af7e8, var(--color-accent) 55%, #12b8a6);
+.botao-primario {
+  background: linear-gradient(180deg, #6af7e8, var(--cor-destaque) 55%, #12b8a6);
   color: #021311;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .25) inset, 0 12px 34px -10px rgba(47, 240, 220, .7)
 }
 
-.primary-button:hover {
+.botao-primario:hover {
   background: linear-gradient(180deg, #8cfaee, #37f3df 55%, #17c7b4)
 }
 
-.booking-navigation-link {
-  background: linear-gradient(180deg, #6af7e8, var(--color-accent));
+.link-menu-agendamento {
+  background: linear-gradient(180deg, #6af7e8, var(--cor-destaque));
   box-shadow: 0 0 18px -4px rgba(47, 240, 220, .7)
 }
 
-.intro-section::after {
+.secao-abertura::after {
   background: linear-gradient(0deg, #080d10, rgba(8, 13, 16, .65) 45%, transparent 78%)
 }
 
-.service-cards li,
-#booking form {
-  background: var(--background-metal);
-  border: 1px solid var(--color-border);
+.lista-servicos li,
+#agendamento form {
+  background: var(--fundo-metal);
+  border: 1px solid var(--cor-borda);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .09) inset, 0 24px 50px -28px #000
 }
 
-.service-cards li:hover {
-  border-color: var(--color-accent);
+.lista-servicos li:hover {
+  border-color: var(--cor-destaque);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .09) inset, 0 0 30px -8px rgba(47, 240, 220, .5)
 }
 
-.service-price {
-  color: var(--color-accent)
+.preco-servico {
+  color: var(--cor-destaque)
 }
 
-.choice-option span,
+.opcao-selecao span,
 input[type=date],
 input[type=text],
 input[type=tel] {
   background: rgba(0, 0, 0, .3);
-  border-color: var(--color-border)
+  border-color: var(--cor-borda)
 }
 
-.choice-option input:checked+span {
-  border-color: var(--color-accent);
+.opcao-selecao input:checked+span {
+  border-color: var(--cor-destaque);
   background: rgba(47, 240, 220, .14);
-  box-shadow: 0 0 18px -6px var(--color-accent)
+  box-shadow: 0 0 18px -6px var(--cor-destaque)
 }
 
-.cuts-video-scrubber {
+.controle-video-cortes {
   box-shadow: 0 0 0 1px rgba(190, 215, 222, .25), 0 0 60px -20px rgba(47, 240, 220, .5), 0 40px 80px -30px #000
 }
 
-.cuts-video-progress-track i,
-.intro-progress-bar {
-  background: var(--color-accent);
-  box-shadow: 0 0 12px var(--color-accent)
+.trilha-progresso-cortes i,
+.barra-progresso-abertura {
+  background: var(--cor-destaque);
+  box-shadow: 0 0 12px var(--cor-destaque)
 }
 
-.cuts-thumbnails button[aria-current="true"] {
-  border-color: var(--color-accent);
+.miniaturas-cortes button[aria-current="true"] {
+  border-color: var(--cor-destaque);
   box-shadow: 0 0 14px rgba(47, 240, 220, .45)
 }
 
 @media(max-width:600px) {
-  .crest {
+  .brasao {
     width: min(150px, 19svh)
   }
 }
 
 /* ===== crocodilo que entra andando na seção Serviços ===== */
-#services {
+#servicos {
   overflow-x: clip
 }
 
-.services-introduction {
+.introducao-servicos {
   min-width: 0
 }
 
-.alligator-animation {
+.animacao-jacare {
   position: relative;
   height: clamp(190px, 26vw, 330px);
   margin-top: 20px;
@@ -1282,14 +1282,14 @@ input[type=tel] {
 }
 
 @media(max-width:600px) {
-  .alligator-animation {
+  .animacao-jacare {
     height: 200px;
     margin-top: 8px
   }
 }
 
-.alligator-animation canvas,
-.alligator-animation video.alligator-webm-video {
+.animacao-jacare canvas,
+.animacao-jacare video.video-webm-jacare {
   position: absolute;
   bottom: 0;
   max-width: none;
@@ -1297,12 +1297,12 @@ input[type=tel] {
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .55)) drop-shadow(0 0 26px rgba(47, 240, 220, .16))
 }
 
-.alligator-animation::after {
+.animacao-jacare::after {
   content: "";
   position: absolute;
-  left: var(--alligator-position-x, 50%);
+  left: var(--posicao-x-jacare, 50%);
   bottom: -6px;
-  width: var(--alligator-shadow-width, 220px);
+  width: var(--largura-sombra-jacare, 220px);
   height: 26px;
   transform: translateX(-50%) scale(.6);
   opacity: 0;
@@ -1311,20 +1311,20 @@ input[type=tel] {
   transition: opacity .9s, transform .9s
 }
 
-.alligator-animation.arrived::after {
+.animacao-jacare.jacare-posicionado::after {
   opacity: 1;
   transform: translateX(-50%) scale(1)
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .alligator-animation::after {
+  .animacao-jacare::after {
     transition: none
   }
 }
 
 /* ===== v5: acabamento final ===== */
 ::selection {
-  background: var(--color-accent);
+  background: var(--cor-destaque);
   color: #021311
 }
 
@@ -1334,107 +1334,107 @@ body {
   -webkit-font-smoothing: antialiased
 }
 
-.site-logo {
+.logo-site {
   font-size: 26px;
   letter-spacing: .09em
 }
 
-.site-logo span {
-  background: var(--background-chrome);
+.logo-site span {
+  background: var(--fundo-cromado);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .7))
 }
 
-.site-logo em {
-  -webkit-text-fill-color: var(--color-accent);
+.logo-site em {
+  -webkit-text-fill-color: var(--cor-destaque);
   text-shadow: 0 0 16px rgba(47, 240, 220, .6)
 }
 
-.section-navigation a {
+.navegacao-secoes a {
   position: relative
 }
 
-.section-navigation a::after {
+.navegacao-secoes a::after {
   content: "";
   position: absolute;
   left: 12px;
   right: 12px;
   bottom: 3px;
   height: 2px;
-  background: var(--color-accent);
-  box-shadow: 0 0 10px var(--color-accent);
+  background: var(--cor-destaque);
+  box-shadow: 0 0 10px var(--cor-destaque);
   transform: scaleX(0);
   transition: transform .3s
 }
 
-.section-navigation a:hover::after,
-.section-navigation a[aria-current="true"]::after {
+.navegacao-secoes a:hover::after,
+.navegacao-secoes a[aria-current="true"]::after {
   transform: scaleX(1)
 }
 
-.eyebrow {
+.destaque-abertura {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font: 600 13px/1 var(--font-body);
+  font: 600 13px/1 var(--fonte-corpo);
   letter-spacing: .28em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--cor-destaque);
   text-shadow: 0 0 18px rgba(47, 240, 220, .5)
 }
 
-.eyebrow::before {
+.destaque-abertura::before {
   content: "";
   width: 36px;
   height: 2px;
-  background: var(--color-accent);
-  box-shadow: 0 0 12px var(--color-accent)
+  background: var(--cor-destaque);
+  box-shadow: 0 0 12px var(--cor-destaque)
 }
 
-.intro-content {
+.conteudo-abertura {
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   gap: 12px
 }
 
-.intro-content h1 {
+.conteudo-abertura h1 {
   font-size: clamp(64px, 15vw, 148px);
   line-height: .88;
   margin: 4px 0 10px;
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, .65))
 }
 
-.intro-content h1 .brand-name {
+.conteudo-abertura h1 .nome-marca {
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .6)) drop-shadow(0 0 22px rgba(47, 240, 220, .35))
 }
 
-.intro-content h1 .brand-subtitle {
+.conteudo-abertura h1 .subtitulo-marca {
   letter-spacing: .14em;
   font-size: .62em
 }
 
-.intro-content p {
+.conteudo-abertura p {
   font-size: 20px;
   color: #e3eeec;
   text-shadow: 0 2px 14px rgba(0, 0, 0, .7)
 }
 
-.intro-section::after {
+.secao-abertura::after {
   background: linear-gradient(0deg, #080d10 0%, rgba(8, 13, 16, .72) 38%, transparent 78%), linear-gradient(180deg, rgba(8, 13, 16, .55), transparent 22%)
 }
 
-.primary-button {
+.botao-primario {
   letter-spacing: .02em;
   padding: 16px 34px
 }
 
-.primary-button:hover {
+.botao-primario:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .3) inset, 0 16px 40px -10px rgba(47, 240, 220, .85)
 }
 
-.primary-button.secondary-button {
+.botao-primario.botao-secundario {
   background: rgba(255, 255, 255, .04);
   backdrop-filter: blur(6px);
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5)
@@ -1448,17 +1448,17 @@ h2 {
   letter-spacing: .03em
 }
 
-.section-description {
+.descricao-secao {
   font-size: 18px;
   line-height: 1.7
 }
 
-.service-cards li {
+.lista-servicos li {
   position: relative;
   overflow: hidden
 }
 
-.service-cards li::before {
+.lista-servicos li::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1466,43 +1466,43 @@ h2 {
   bottom: 18%;
   width: 3px;
   border-radius: 3px;
-  background: var(--color-accent);
-  box-shadow: 0 0 14px var(--color-accent);
+  background: var(--cor-destaque);
+  box-shadow: 0 0 14px var(--cor-destaque);
   opacity: 0;
   transition: opacity .3s
 }
 
-.service-cards li:hover {
+.lista-servicos li:hover {
   transform: translateY(-3px)
 }
 
-.service-cards li:hover::before {
+.lista-servicos li:hover::before {
   opacity: 1
 }
 
-.service-cards li {
+.lista-servicos li {
   transition: border-color .3s, box-shadow .3s, transform .3s
 }
 
-.service-cards strong {
+.lista-servicos strong {
   font-size: 23px;
   letter-spacing: .01em
 }
 
-.service-price {
+.preco-servico {
   font-size: 42px
 }
 
-#booking form {
+#agendamento form {
   border-radius: 32px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, .1) inset, 0 50px 90px -40px #000, 0 0 70px -40px rgba(47, 240, 220, .45)
 }
 
 legend {
-  font: 700 13px var(--font-body);
+  font: 700 13px var(--fonte-corpo);
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--cor-destaque);
   margin-bottom: 12px
 }
 
@@ -1510,64 +1510,64 @@ input[type=date]:focus,
 input[type=text]:focus,
 input[type=tel]:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: var(--cor-destaque);
   box-shadow: 0 0 0 4px rgba(47, 240, 220, .15)
 }
 
-.choice-option span:hover {
+.opcao-selecao span:hover {
   transform: translateY(-1px)
 }
 
-.cuts-caption strong {
+.legenda-corte strong {
   letter-spacing: .06em
 }
 
-.cuts-thumbnails button:hover {
+.miniaturas-cortes button:hover {
   opacity: .85
 }
 
-.cuts-navigation-button:hover {
-  box-shadow: 0 0 18px -4px var(--color-accent)
+.botao-navegacao-corte:hover {
+  box-shadow: 0 0 18px -4px var(--cor-destaque)
 }
 
 footer {
   padding: 88px 0 48px
 }
 
-.footer-brand {
+.marca-rodape {
   font-size: 32px;
   margin-bottom: 48px
 }
 
-.footer-contact-information>div {
+.informacoes-contato>div {
   padding-left: 18px;
   border-left: 2px solid rgba(47, 240, 220, .35)
 }
 
-.footer-contact-information h3 {
+.informacoes-contato h3 {
   letter-spacing: .18em;
   text-transform: uppercase;
   font-size: 13px
 }
 
-.footer-contact-information p {
+.informacoes-contato p {
   line-height: 1.8
 }
 
-.reveal-on-scroll {
+.revelar-ao-rolar {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity .8s, transform .8s
 }
 
-.reveal-on-scroll.is-visible {
+.revelar-ao-rolar.visivel {
   opacity: 1;
   transform: none
 }
 
-.section-dark .cuts-layout>div:first-child,
-.section-light .services-introduction,
-.booking-section .booking-layout>div:first-child {
+.secao-escura .layout-cortes>div:first-child,
+.secao-clara .introducao-servicos,
+.secao-agendamento .layout-agendamento>div:first-child {
   position: relative
 }
 
@@ -1576,81 +1576,81 @@ footer {
     padding: 72px 0
   }
 
-  .intro-content h1 {
+  .conteudo-abertura h1 {
     font-size: clamp(58px, 19vw, 92px)
   }
 
-  .eyebrow {
+  .destaque-abertura {
     font-size: 11px;
     letter-spacing: .22em
   }
 
-  .service-price {
+  .preco-servico {
     font-size: 34px
   }
 
-  .footer-contact-information>div {
+  .informacoes-contato>div {
     padding-left: 14px
   }
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .reveal-on-scroll {
+  .revelar-ao-rolar {
     opacity: 1;
     transform: none;
     transition: none
   }
 
-  .section-navigation a::after,
-  .service-cards li {
+  .navegacao-secoes a::after,
+  .lista-servicos li {
     transition: none
   }
 }
 
-/* ===== Horários ocupados (gerados pelo script do Akitas com a classe .is-full) ===== */
-.choice-option.is-full input {
+/* ===== Horários ocupados (gerados pelo script do Akitas com a classe .lotado) ===== */
+.opcao-selecao.lotado input {
   display: none
 }
 
-.choice-option.is-full span {
+.opcao-selecao.lotado span {
   opacity: .28;
   text-decoration: line-through;
   cursor: not-allowed;
   background: transparent
 }
 
-.choice-option.is-full span:hover {
-  border-color: var(--color-border);
+.opcao-selecao.lotado span:hover {
+  border-color: var(--cor-borda);
   transform: none
 }
 
 /* ===== Logo em uma linha no celular ===== */
-.site-logo span {
+.logo-site span {
   white-space: nowrap
 }
 
 @media(max-width:400px) {
-  .site-logo {
+  .logo-site {
     font-size: 18px;
     gap: 8px
   }
 
-  .site-logo img {
+  .logo-site img {
     width: 32px;
     height: 32px
   }
 }
 
 /* ===== Turnos (manhã / tarde / noite) ===== */
-.choice-list.time-slot-options {
+.lista-opcoes.opcoes-turnos {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr))
 }
 
-.time-slot-options .choice-option span {
+.opcoes-turnos .opcao-selecao span {
   align-items: center
 }
 
-.time-slot-options .time-slot-details {
+.opcoes-turnos .detalhes-turno {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1661,26 +1661,26 @@ footer {
   cursor: inherit
 }
 
-.time-slot-options .time-slot-details small {
-  color: var(--color-text-muted);
+.opcoes-turnos .detalhes-turno small {
+  color: var(--cor-texto-suave);
   font-weight: 400
 }
 
-.time-slot-options .choice-option b {
+.opcoes-turnos .opcao-selecao b {
   font-size: 13px;
   white-space: nowrap
 }
 
-.time-slot-options .choice-option.is-full span {
+.opcoes-turnos .opcao-selecao.lotado span {
   text-decoration: none
 }
 
-.time-slot-options .choice-option.is-full .time-slot-details {
+.opcoes-turnos .opcao-selecao.lotado .detalhes-turno {
   text-decoration: line-through
 }
 
 /* ===== Barbeiros entrando ao selecionar o nome ===== */
-.barber-video-stage {
+.palco-video-barbeiro {
   position: relative;
   height: clamp(340px, 92vw, 460px);
   margin-top: 8px;
@@ -1690,7 +1690,7 @@ footer {
   user-select: none
 }
 
-.barber-video {
+.video-barbeiro {
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -1710,7 +1710,7 @@ footer {
   mask-image: radial-gradient(ellipse 52% 54% at 50% 46%, #000 58%, transparent 100%)
 }
 
-.barber-video.is-active {
+.video-barbeiro.ativo {
   opacity: 1;
   visibility: visible;
   transform: translate3d(-50%, 0, 0) scale(1);
@@ -1718,21 +1718,21 @@ footer {
 }
 
 @media(min-width:860px) {
-  .booking-section .booking-layout {
+  .secao-agendamento .layout-agendamento {
     row-gap: 0
   }
 
-  .booking-section .booking-layout>form {
+  .secao-agendamento .layout-agendamento>form {
     grid-column: 2;
     grid-row: 1 / span 2
   }
 
-  .booking-section .booking-layout>div:first-child {
+  .secao-agendamento .layout-agendamento>div:first-child {
     grid-column: 1;
     grid-row: 1
   }
 
-  .barber-video-stage {
+  .palco-video-barbeiro {
     grid-column: 1;
     grid-row: 2;
     height: auto;
@@ -1740,26 +1740,26 @@ footer {
     margin-top: 24px
   }
 
-  .barber-video {
+  .video-barbeiro {
     height: min(100%, 620px);
     transform: translate3d(-150%, 0, 0) scale(.97)
   }
 
-  .barber-video.is-active {
+  .video-barbeiro.ativo {
     transform: translate3d(-50%, 0, 0) scale(1)
   }
 }
 
 @media(prefers-reduced-motion:reduce) {
 
-  .barber-video,
-  .barber-video.is-active {
+  .video-barbeiro,
+  .video-barbeiro.ativo {
     transition: opacity .3s, visibility 0s;
     transform: translate3d(-50%, 0, 0)
   }
 }
 
 /* o blend "screen" dos vídeos precisa enxergar o fundo real da página (textura + brilho) */
-#booking {
+#agendamento {
   isolation: auto
 }

@@ -21,118 +21,118 @@
 
 <body>
   <header>
-    <div class="page-container"><a class="site-logo" href="#" aria-label="Os Malas Studio"><img src="img/malas1.jpg" alt="" width="44"
+    <div class="container-pagina"><a class="logo-site" href="#" aria-label="Os Malas Studio"><img src="img/malas1.jpg" alt="" width="44"
           height="44"><span>Os Malas <em>Studio</em></span></a>
-      <nav class="section-navigation" aria-label="Seções do site"><a href="#cuts">Cortes</a><a href="#services">Serviços</a><a
-          href="#contact">Contato</a></nav><a class="booking-navigation-link" href="#booking">Agendar</a>
+      <nav class="navegacao-secoes" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a
+          href="#contato">Contato</a></nav><a class="link-menu-agendamento" href="#agendamento">Agendar</a>
     </div>
   </header>
 
   <main>
-    <div class="intro-section" id="intro">
-      <div class="intro-background" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
-      <div class="intro-media"><video id="intro-video" src="video/osmalas.mp4" muted playsinline preload="auto" poster="img/poster.jpg"
+    <div class="secao-abertura" id="inicio">
+      <div class="fundo-abertura" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
+      <div class="midia-abertura"><video id="video-abertura" src="video/osmalas.mp4" muted playsinline preload="auto" poster="img/poster.jpg"
           aria-label="Barbeiro da Os Malas Studio cortando o cabelo de um cliente"></video></div>
-      <div class="intro-content page-container">
-        <span class="eyebrow">Barbearia · São Paulo</span>
-        <h1><span class="brand-name">Os Malas</span><span class="brand-subtitle">Studio</span></h1>
+      <div class="conteudo-abertura container-pagina">
+        <span class="destaque-abertura">Barbearia · São Paulo</span>
+        <h1><span class="nome-marca">Os Malas</span><span class="subtitulo-marca">Studio</span></h1>
         <p>Corte e barba feitos com calma, num ambiente para você relaxar. Escolha o horário e venha.</p>
-        <div class="intro-actions"><a class="primary-button" href="#booking">Agendar meu horário</a><a class="primary-button secondary-button"
-            href="#services">Ver serviços e preços</a></div>
+        <div class="acoes-abertura"><a class="botao-primario" href="#agendamento">Agendar meu horário</a><a class="botao-primario botao-secundario"
+            href="#servicos">Ver serviços e preços</a></div>
       </div>
-      <button class="intro-start-button" id="intro-start-button" type="button" hidden>Toque para começar</button>
-      <button class="intro-skip-button" id="intro-skip-button" type="button">Pular vídeo</button>
-      <div class="intro-progress-bar" id="intro-video-progress"></div>
+      <button class="botao-iniciar-abertura" id="botao-iniciar-abertura" type="button" hidden>Toque para começar</button>
+      <button class="botao-pular-abertura" id="botao-pular-abertura" type="button">Pular vídeo</button>
+      <div class="barra-progresso-abertura" id="progresso-video-abertura"></div>
     </div>
 
-    <section id="cuts" class="section-dark">
-      <div class="page-container cuts-layout">
+    <section id="cortes" class="secao-escura">
+      <div class="container-pagina layout-cortes">
         <div>
           <h2>Nossos cortes</h2>
-          <p class="section-description">Arraste para os lados e controle o vídeo: para a direita avança, para a esquerda
+          <p class="descricao-secao">Arraste para os lados e controle o vídeo: para a direita avança, para a esquerda
             volta. Toque nas miniaturas para ver os outros cortes.</p>
         </div>
-        <div class="cuts-player">
-          <div class="cuts-video-scrubber" id="cuts-video-scrubber" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte"
+        <div class="reprodutor-cortes">
+          <div class="controle-video-cortes" id="controle-video-cortes" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte"
             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <video id="cuts-video" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
-            <div class="cuts-video-hint" id="cuts-video-hint" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
-            <div class="cuts-video-progress-track"><i id="cuts-video-progress"></i></div>
+            <video id="video-cortes" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
+            <div class="dica-controle-cortes" id="dica-controle-cortes" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
+            <div class="trilha-progresso-cortes"><i id="progresso-cortes"></i></div>
           </div>
-          <div class="cuts-caption"><button class="cuts-navigation-button" id="previous-cut" type="button" aria-label="Corte anterior">‹</button><strong
-              id="current-cut-name" aria-live="polite"></strong><button class="cuts-navigation-button" id="next-cut" type="button"
+          <div class="legenda-corte"><button class="botao-navegacao-corte" id="corte-anterior" type="button" aria-label="Corte anterior">‹</button><strong
+              id="nome-corte-atual" aria-live="polite"></strong><button class="botao-navegacao-corte" id="proximo-corte" type="button"
               aria-label="Próximo corte">›</button></div>
-          <div class="cuts-thumbnails" id="cuts-thumbnails"></div>
+          <div class="miniaturas-cortes" id="miniaturas-cortes"></div>
         </div>
       </div>
     </section>
 
-    <section id="services" class="section-light">
-      <div class="page-container services-layout">
-        <div class="services-introduction">
+    <section id="servicos" class="secao-clara">
+      <div class="container-pagina layout-servicos">
+        <div class="introducao-servicos">
           <h2>Serviços</h2>
-          <p class="section-description">Valores por atendimento. Toque em agendar para já escolher o serviço.</p>
-          <div class="alligator-animation" id="alligator-animation" aria-hidden="true"><video id="alligator-webm-video" class="alligator-webm-video" src="video/croc.webm" muted
-              playsinline preload="none" tabindex="-1"></video><canvas id="alligator-frame-canvas"></canvas><video id="alligator-mp4-video"
+          <p class="descricao-secao">Valores por atendimento. Toque em agendar para já escolher o serviço.</p>
+          <div class="animacao-jacare" id="animacao-jacare" aria-hidden="true"><video id="video-webm-jacare" class="video-webm-jacare" src="video/croc.webm" muted
+              playsinline preload="none" tabindex="-1"></video><canvas id="tela-quadros-jacare"></canvas><video id="video-mp4-jacare"
               src="video/croc.mp4" muted playsinline preload="none" tabindex="-1"
               style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video></div>
         </div>
-        <p class="form-message service-loading-status" id="service-loading-status" role="status">Carregando serviços...</p>
-        <ul class="service-cards reveal-on-scroll" id="service-cards"></ul>
+        <p class="mensagem-formulario status-carregamento-servicos" id="status-carregamento-servicos" role="status">Carregando serviços...</p>
+        <ul class="lista-servicos revelar-ao-rolar" id="lista-servicos"></ul>
       </div>
     </section>
 
-    <section id="booking" class="booking-section">
-      <div class="page-container booking-layout">
+    <section id="agendamento" class="secao-agendamento">
+      <div class="container-pagina layout-agendamento">
         <div>
           <h2>Agende seu corte</h2>
-          <p class="section-description">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, reservamos sua vaga e
+          <p class="descricao-secao">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, reservamos sua vaga e
             disponibilizamos o WhatsApp para falar com a barbearia.</p>
         </div>
-        <form id="booking-form" class="reveal-on-scroll" novalidate>
+        <form id="formulario-agendamento" class="revelar-ao-rolar" novalidate>
           <fieldset>
             <legend>1. Serviço</legend>
-            <div class="choice-list" id="booking-service-options"></div>
+            <div class="lista-opcoes" id="opcoes-servicos-agendamento"></div>
           </fieldset>
           <fieldset>
             <legend>2. Barbeiro</legend>
-            <div class="choice-list" id="booking-barber-options"></div>
+            <div class="lista-opcoes" id="opcoes-barbeiros-agendamento"></div>
           </fieldset>
           <fieldset>
             <legend>3. Dia</legend>
-            <input type="date" id="booking-date" aria-label="Dia do atendimento">
-            <p class="form-message" id="booking-date-message"></p>
+            <input type="date" id="data-agendamento" aria-label="Dia do atendimento">
+            <p class="mensagem-formulario" id="mensagem-data-agendamento"></p>
           </fieldset>
           <fieldset>
             <legend>4. Turno</legend>
-            <div class="choice-list time-slot-options" id="booking-time-options"></div>
-            <p class="form-message" id="booking-time-message">Escolha o barbeiro e o dia para ver os turnos.</p>
+            <div class="lista-opcoes opcoes-turnos" id="opcoes-turnos-agendamento"></div>
+            <p class="mensagem-formulario" id="mensagem-turnos-agendamento">Escolha o barbeiro e o dia para ver os turnos.</p>
           </fieldset>
           <fieldset>
             <legend>5. Seus dados</legend>
-            <div class="form-row">
-              <div><label class="form-label" for="customer-name">Nome</label><input type="text" minlength="2" maxlength="120" id="customer-name"
+            <div class="linha-formulario">
+              <div><label class="rotulo-campo" for="nome-cliente">Nome</label><input type="text" minlength="2" maxlength="120" id="nome-cliente"
                   autocomplete="name">
               </div>
-              <div><label class="form-label" for="customer-phone">Telefone</label><input type="tel" maxlength="15" id="customer-phone" autocomplete="tel"
+              <div><label class="rotulo-campo" for="telefone-cliente">Telefone</label><input type="tel" maxlength="15" id="telefone-cliente" autocomplete="tel"
                   placeholder="(11) 90000-0000"></div>
             </div>
           </fieldset>
-          <button class="primary-button" type="submit" disabled>Carregando agendamento...</button>
-          <p class="form-message form-error" id="booking-error" role="alert"></p>
-          <div class="booking-confirmation" id="booking-confirmation" hidden></div>
+          <button class="botao-primario" type="submit" disabled>Carregando agendamento...</button>
+          <p class="mensagem-formulario erro-formulario" id="erro-agendamento" role="alert"></p>
+          <div class="agendamento-confirmado" id="agendamento-confirmado" hidden></div>
         </form>
 
-        <div class="barber-video-stage" id="barber-video-stage" aria-hidden="true">
-          <video class="barber-video" data-barber="Alexandre" muted playsinline preload="auto">
+        <div class="palco-video-barbeiro" id="palco-video-barbeiro" aria-hidden="true">
+          <video class="video-barbeiro" data-barbeiro="Alexandre" muted playsinline preload="auto">
             <source src="video/barbeiros/alexandre.webm" type="video/webm">
             <source src="video/barbeiros/alexandre.mp4" type="video/mp4">
           </video>
-          <video class="barber-video" data-barber="Luiz" muted playsinline preload="auto">
+          <video class="video-barbeiro" data-barbeiro="Luiz" muted playsinline preload="auto">
             <source src="video/barbeiros/luiz.webm" type="video/webm">
             <source src="video/barbeiros/luiz.mp4" type="video/mp4">
           </video>
-          <video class="barber-video" data-barber="Matheus" muted playsinline preload="auto">
+          <video class="video-barbeiro" data-barbeiro="Matheus" muted playsinline preload="auto">
             <source src="video/barbeiros/matheus.webm" type="video/webm">
             <source src="video/barbeiros/matheus.mp4" type="video/mp4">
           </video>
@@ -141,11 +141,11 @@
     </section>
   </main>
 
-  <footer id="contact">
-    <div class="page-container">
-      <div class="footer-brand"><img src="img/malas1.jpg" alt="" width="56" height="56"><span>Os Malas
+  <footer id="contato">
+    <div class="container-pagina">
+      <div class="marca-rodape"><img src="img/malas1.jpg" alt="" width="56" height="56"><span>Os Malas
           <em>Studio</em></span></div>
-      <div class="footer-contact-information">
+      <div class="informacoes-contato">
         <div>
           <h3>Horário</h3>
           <p>Ter a sex: 8h30 às 20h<br>Sábado: 8h30 às 18h<br>Dom e seg: Fechado</p>
@@ -159,8 +159,8 @@
           <p>WhatsApp (11) 97739-5774<br>@osmalasstudio</p>
         </div>
       </div>
-      <p class="footer-copyright">© 2026 Os Malas Studio · Site desenvolvido por nós:
-        <span id="creator-credit-container"></span>
+      <p class="direitos-autorais">© 2026 Os Malas Studio · Site desenvolvido por nós:
+        <span id="creditos-criadores"></span>
       </p>
     </div>
   </footer>
