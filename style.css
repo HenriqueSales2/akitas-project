@@ -1,17 +1,17 @@
 :root {
-  --ink: #071312;
-  --forest: #0d2320;
-  --mist: #f2f6f5;
-  --teal: #27d3b5;
-  --teal-d: #0b7868;
-  --fg: #eef4f3;
-  --mut: rgba(238, 244, 243, .68);
-  --line: rgba(255, 255, 255, .13);
-  --dk: #0b1a18;
-  --dk-mut: #51635f;
-  --line-l: #d5e0dd;
-  --h: 'Big Shoulders Display', 'Impact', sans-serif;
-  --b: 'Figtree', system-ui, sans-serif;
+  --color-background: #071312;
+  --color-background-section: #0d2320;
+  --color-background-light: #f2f6f5;
+  --color-accent: #27d3b5;
+  --color-accent-dark: #0b7868;
+  --color-text: #eef4f3;
+  --color-text-muted: rgba(238, 244, 243, .68);
+  --color-border: rgba(255, 255, 255, .13);
+  --color-text-dark: #0b1a18;
+  --color-text-dark-muted: #51635f;
+  --color-border-light: #d5e0dd;
+  --font-display: 'Big Shoulders Display', 'Impact', sans-serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
   color-scheme: dark;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -31,9 +31,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--fg);
-  font: 400 17px/1.65 var(--b)
+  background: var(--color-background);
+  color: var(--color-text);
+  font: 400 17px/1.65 var(--font-body)
 }
 
 a {
@@ -41,11 +41,11 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid var(--teal);
+  outline: 3px solid var(--color-accent);
   outline-offset: 3px
 }
 
-.wrap {
+.page-container {
   width: min(1080px, 100% - 40px);
   margin-inline: auto
 }
@@ -55,29 +55,29 @@ section {
 }
 
 h2 {
-  font: 800 clamp(40px, 6.5vw, 64px)/1 var(--h);
+  font: 800 clamp(40px, 6.5vw, 64px)/1 var(--font-display);
   text-transform: uppercase;
   letter-spacing: .01em;
   margin: 0 0 16px
 }
 
-.lead {
-  color: var(--mut);
+.section-description {
+  color: var(--color-text-muted);
   max-width: 44ch;
   margin: 0
 }
 
-.light {
-  background: var(--mist);
-  color: var(--dk)
+.section-light {
+  background: var(--color-background-light);
+  color: var(--color-text-dark)
 }
 
-.light .lead {
-  color: var(--dk-mut)
+.section-light .section-description {
+  color: var(--color-text-dark-muted)
 }
 
-.light :focus-visible {
-  outline-color: var(--teal-d)
+.section-light :focus-visible {
+  outline-color: var(--color-accent-dark)
 }
 
 /* cabeçalho */
@@ -92,102 +92,102 @@ header {
   -webkit-backdrop-filter: blur(14px)
 }
 
-header .wrap {
+header .page-container {
   display: flex;
   align-items: center;
   gap: 8px 28px
 }
 
-.logo {
+.site-logo {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   margin-right: auto;
-  font: 800 24px/1 var(--h);
+  font: 800 24px/1 var(--font-display);
   letter-spacing: .06em;
   text-decoration: none;
   text-transform: uppercase
 }
 
-.logo img,
-.brand img {
+.site-logo img,
+.footer-brand img {
   display: block;
   border-radius: 50%
 }
 
-.logo em,
-.brand em {
+.site-logo em,
+.footer-brand em {
   font-style: normal;
   font-weight: 600;
-  color: var(--teal);
+  color: var(--color-accent);
   letter-spacing: .06em
 }
 
-.links {
+.section-navigation {
   display: flex;
   gap: 4px
 }
 
-.links a {
-  font: 500 15px var(--b);
+.section-navigation a {
+  font: 500 15px var(--font-body);
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 8px;
-  color: var(--mut);
+  color: var(--color-text-muted);
   transition: color .2s
 }
 
-.links a:hover,
-.links a[aria-current="true"] {
+.section-navigation a:hover,
+.section-navigation a[aria-current="true"] {
   color: #fff
 }
 
-.nav-cta {
-  background: var(--teal);
-  color: var(--ink);
+.booking-navigation-link {
+  background: var(--color-accent);
+  color: var(--color-background);
   padding: 10px 22px;
   border-radius: 999px;
-  font: 700 15px var(--b);
+  font: 700 15px var(--font-body);
   text-decoration: none
 }
 
-html.locked,
-html.locked body {
+html.is-scroll-locked,
+html.is-scroll-locked body {
   overflow: hidden;
   touch-action: none;
   overscroll-behavior: none
 }
 
-html.locked .nav-cta,
-html.locked .links {
+html.is-scroll-locked .booking-navigation-link,
+html.is-scroll-locked .section-navigation {
   visibility: hidden
 }
 
 @media(max-width:700px) {
-  .links {
+  .section-navigation {
     display: none
   }
 
-  .logo {
+  .site-logo {
     font-size: 20px
   }
 
-  .logo img {
+  .site-logo img {
     width: 36px;
     height: 36px
   }
 
-  .nav-cta {
+  .booking-navigation-link {
     padding: 9px 18px
   }
 
-  .opt span {
+  .choice-option span {
     flex-direction: column;
   }
 }
 
 /* abertura */
-.hero {
+.intro-section {
   position: relative;
   height: 100svh;
   min-height: 480px;
@@ -195,7 +195,7 @@ html.locked .links {
   background: #020707
 }
 
-.bg {
+.intro-background {
   position: absolute;
   inset: -40px;
   background: center/cover;
@@ -203,12 +203,12 @@ html.locked .links {
   display: none
 }
 
-.media {
+.intro-media {
   position: absolute;
   inset: 0
 }
 
-.media video {
+.intro-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -217,16 +217,16 @@ html.locked .links {
 }
 
 @media(min-aspect-ratio:1/1) {
-  .bg {
+  .intro-background {
     display: block
   }
 
-  .media video {
+  .intro-media video {
     object-fit: contain
   }
 }
 
-.hero::after {
+.intro-section::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -237,11 +237,11 @@ html.locked .links {
   background: linear-gradient(0deg, rgba(7, 19, 18, .97), rgba(7, 19, 18, .62) 45%, transparent 75%)
 }
 
-.hero.done::after {
+.intro-section.is-complete::after {
   opacity: 1
 }
 
-.copy {
+.intro-content {
   position: absolute;
   inset: auto 0 0;
   z-index: 2;
@@ -255,7 +255,7 @@ html.locked .links {
   justify-items: start
 }
 
-.hero.done .copy {
+.intro-section.is-complete .intro-content {
   opacity: 1;
   transform: none;
   pointer-events: auto
@@ -269,67 +269,67 @@ html.locked .links {
   mask-image: radial-gradient(closest-side, #000 88%, transparent 100%)
 }
 
-.copy h1 {
+.intro-content h1 {
   margin: 0 0 6px;
   display: flex;
   flex-direction: column;
-  font: 800 clamp(56px, 13vw, 112px)/.92 var(--h);
+  font: 800 clamp(56px, 13vw, 112px)/.92 var(--font-display);
   text-transform: uppercase;
   letter-spacing: .01em
 }
 
-.copy h1 .w2 {
+.intro-content h1 .brand-subtitle {
   font-weight: 600;
-  color: var(--teal)
+  color: var(--color-accent)
 }
 
-.copy p {
+.intro-content p {
   max-width: 36ch;
   color: #d3e0de;
   font-size: 19px;
   margin: 0 0 22px
 }
 
-.btns {
+.intro-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap
 }
 
-.btn {
+.primary-button {
   display: inline-block;
   border: 0;
   cursor: pointer;
-  font: 700 16px var(--b);
+  font: 700 16px var(--font-body);
   padding: 15px 30px;
   border-radius: 999px;
   text-decoration: none;
-  background: var(--teal);
-  color: var(--ink);
+  background: var(--color-accent);
+  color: var(--color-background);
   transition: transform .2s, background .2s
 }
 
-.btn:hover {
+.primary-button:hover {
   background: #4fe3c8;
   transform: translateY(-1px)
 }
 
-.btn.ghost {
+.primary-button.secondary-button {
   background: transparent;
   color: #fff;
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55)
 }
 
-.btn.ghost:hover {
+.primary-button.secondary-button:hover {
   background: rgba(255, 255, 255, .08);
   box-shadow: inset 0 0 0 1.5px #fff
 }
 
-.skip,
-.start {
+.intro-skip-button,
+.intro-start-button {
   position: absolute;
   z-index: 3;
-  font: 600 15px var(--b);
+  font: 600 15px var(--font-body);
   color: #fff;
   background: rgba(7, 19, 18, .65);
   border: 1px solid rgba(255, 255, 255, .35);
@@ -339,60 +339,60 @@ html.locked .links {
   backdrop-filter: blur(6px)
 }
 
-.skip {
+.intro-skip-button {
   right: 20px;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px))
 }
 
-.start {
+.intro-start-button {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   font-size: 18px;
   padding: 16px 30px;
-  background: var(--teal);
-  color: var(--ink);
+  background: var(--color-accent);
+  color: var(--color-background);
   border: 0
 }
 
-.hero.done .skip {
+.intro-section.is-complete .intro-skip-button {
   display: none
 }
 
-.prog {
+.intro-progress-bar {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
   height: 3px;
-  background: var(--teal);
+  background: var(--color-accent);
   transform: scaleX(0);
   transform-origin: left;
   z-index: 3;
   transition: opacity .4s
 }
 
-.hero.done .prog {
+.intro-section.is-complete .intro-progress-bar {
   opacity: 0
 }
 
 @media(min-width:860px) {
-  .copy {
+  .intro-content {
     grid-template-columns: 1fr auto;
     align-items: end;
     column-gap: 40px
   }
 
-  .copy .crest {
+  .intro-content .crest {
     grid-column: 2;
     grid-row: 1/span 3;
     width: clamp(240px, 28vw, 360px);
     justify-self: end
   }
 
-  .copy h1,
-  .copy p,
-  .copy .btns {
+  .intro-content h1,
+  .intro-content p,
+  .intro-content .intro-actions {
     grid-column: 1
   }
 }
@@ -404,31 +404,31 @@ html.locked .links {
 }
 
 /* cortes */
-.cgrid {
+.cuts-layout {
   display: grid;
   gap: 36px;
   align-items: center;
   grid-template-columns: minmax(0, 1fr)
 }
 
-.cgrid>* {
+.cuts-layout>* {
   min-width: 0
 }
 
 @media(min-width:860px) {
-  .cgrid {
+  .cuts-layout {
     grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
     gap: 64px
   }
 }
 
-.cui {
+.cuts-player {
   width: 100%;
   max-width: 680px;
   margin-inline: auto
 }
 
-.scrub {
+.cuts-video-scrubber {
   position: relative;
   aspect-ratio: 16/9;
   width: 100%;
@@ -436,7 +436,7 @@ html.locked .links {
   border-radius: 20px;
   overflow: hidden;
   background: #020707;
-  box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px rgba(0, 0, 0, .8);
+  box-shadow: 0 0 0 1px var(--color-border), 0 30px 60px -30px rgba(0, 0, 0, .8);
   touch-action: pan-y;
   overscroll-behavior-x: contain;
   cursor: grab;
@@ -445,11 +445,11 @@ html.locked .links {
   -webkit-touch-callout: none
 }
 
-.scrub.on {
+.cuts-video-scrubber.is-active {
   cursor: grabbing
 }
 
-.scrub video {
+.cuts-video-scrubber video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -457,7 +457,7 @@ html.locked .links {
   pointer-events: none
 }
 
-.hint {
+.cuts-video-hint {
   position: absolute;
   left: 50%;
   bottom: 26px;
@@ -469,24 +469,24 @@ html.locked .links {
   border-radius: 999px;
   background: rgba(7, 19, 18, .7);
   backdrop-filter: blur(8px);
-  font: 600 15px var(--b);
+  font: 600 15px var(--font-body);
   transition: opacity .4s;
   pointer-events: none;
   white-space: nowrap
 }
 
-.hint span {
-  color: var(--teal);
+.cuts-video-hint span {
+  color: var(--color-accent);
   font-size: 22px;
   line-height: 1;
   animation: nudge 1.4s ease-in-out infinite
 }
 
-.hint span:first-child {
+.cuts-video-hint span:first-child {
   animation-direction: reverse
 }
 
-.hint.off {
+.cuts-video-hint.off {
   opacity: 0
 }
 
@@ -496,22 +496,22 @@ html.locked .links {
   }
 }
 
-.track {
+.cuts-video-progress-track {
   position: absolute;
   inset: auto 0 0;
   height: 3px;
   background: rgba(255, 255, 255, .18)
 }
 
-.track i {
+.cuts-video-progress-track i {
   display: block;
   height: 100%;
-  background: var(--teal);
+  background: var(--color-accent);
   transform: scaleX(0);
   transform-origin: left
 }
 
-.cap {
+.cuts-caption {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -519,36 +519,36 @@ html.locked .links {
   margin: 16px 0
 }
 
-.cap strong {
+.cuts-caption strong {
   flex: 1;
   min-width: 0;
-  font: 800 clamp(24px, 6.5vw, 30px)/1.05 var(--h);
+  font: 800 clamp(24px, 6.5vw, 30px)/1.05 var(--font-display);
   text-transform: uppercase;
   letter-spacing: .04em;
   text-align: center;
   overflow-wrap: anywhere
 }
 
-.arr {
+.cuts-navigation-button {
   flex: none;
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--color-border);
   background: none;
   color: #fff;
-  font: 400 26px/1 var(--b);
+  font: 400 26px/1 var(--font-body);
   cursor: pointer;
   padding: 0 0 3px;
   transition: border-color .2s, color .2s
 }
 
-.arr:hover {
-  border-color: var(--teal);
-  color: var(--teal)
+.cuts-navigation-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent)
 }
 
-.thumbs {
+.cuts-thumbnails {
   display: flex;
   gap: 10px;
   width: 100%;
@@ -560,11 +560,11 @@ html.locked .links {
   scrollbar-width: none
 }
 
-.thumbs::-webkit-scrollbar {
+.cuts-thumbnails::-webkit-scrollbar {
   display: none
 }
 
-.thumbs button {
+.cuts-thumbnails button {
   flex: none;
   scroll-snap-align: center;
   width: 60px;
@@ -579,12 +579,12 @@ html.locked .links {
   transition: opacity .2s, border-color .2s
 }
 
-.thumbs button[aria-current="true"] {
-  border-color: var(--teal);
+.cuts-thumbnails button[aria-current="true"] {
+  border-color: var(--color-accent);
   opacity: 1
 }
 
-.thumbs img {
+.cuts-thumbnails img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -592,82 +592,82 @@ html.locked .links {
 }
 
 @media(max-height:520px) and (orientation:landscape) {
-  .scrub {
+  .cuts-video-scrubber {
     max-height: none;
     width: min(100%, 60svh*1.78)
   }
 }
 
 @media(max-width:859px) {
-  .cgrid {
+  .cuts-layout {
     gap: 28px
   }
 }
 
 /* serviços */
-.sgrid {
+.services-layout {
   display: grid;
   gap: 40px
 }
 
 @media(min-width:860px) {
-  .sgrid {
+  .services-layout {
     grid-template-columns: .8fr 1.2fr;
     gap: 64px;
     align-items: start
   }
 }
 
-.services {
+.service-cards {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line-l)
+  border-top: 1px solid var(--color-border-light)
 }
 
-.services-status {
+.service-loading-status {
   margin: 0 0 12px
 }
 
-.services li {
+.service-cards li {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 8px 24px;
   align-items: center;
   padding: 26px 0;
-  border-bottom: 1px solid var(--line-l)
+  border-bottom: 1px solid var(--color-border-light)
 }
 
-.services strong {
-  font: 700 22px var(--b);
+.service-cards strong {
+  font: 700 22px var(--font-body);
   display: block;
   margin-bottom: 2px
 }
 
-.services small {
-  color: var(--dk-mut);
+.service-cards small {
+  color: var(--color-text-dark-muted);
   font-size: 15px
 }
 
-.price {
-  font: 800 38px/1 var(--h);
-  color: var(--teal-d);
+.service-price {
+  font: 800 38px/1 var(--font-display);
+  color: var(--color-accent-dark);
   letter-spacing: .01em
 }
 
-.mini {
+.service-book-button {
   background: none;
-  border: 1.5px solid var(--dk);
-  color: var(--dk);
-  font: 700 14px var(--b);
+  border: 1.5px solid var(--color-text-dark);
+  color: var(--color-text-dark);
+  font: 700 14px var(--font-body);
   cursor: pointer;
   padding: 9px 18px;
   border-radius: 999px;
   transition: background .2s, color .2s
 }
 
-.mini:hover {
-  background: var(--dk);
+.service-book-button:hover {
+  background: var(--color-text-dark);
   color: #fff
 }
 
@@ -676,37 +676,37 @@ html.locked .links {
     padding: 72px 0
   }
 
-  .services li {
+  .service-cards li {
     grid-template-columns: 1fr auto;
     gap: 4px 16px
   }
 
-  .services li>div {
+  .service-cards li>div {
     grid-column: 1/-1;
     min-width: 0
   }
 
-  .price {
+  .service-price {
     font-size: 32px
   }
 
-  .mini {
+  .service-book-button {
     justify-self: end
   }
 }
 
 /* agendamento */
-.book {
-  background: var(--forest)
+.booking-section {
+  background: var(--color-background-section)
 }
 
-.grid {
+.booking-layout {
   display: grid;
   gap: 40px
 }
 
 @media(min-width:860px) {
-  .grid {
+  .booking-layout {
     grid-template-columns: .8fr 1.2fr;
     gap: 64px
   }
@@ -719,57 +719,57 @@ fieldset {
 }
 
 legend,
-label.l {
-  font: 600 16px var(--b);
+label.form-label {
+  font: 600 16px var(--font-body);
   margin-bottom: 10px;
   padding: 0;
   display: block
 }
 
-.opts {
+.choice-list {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.opt input {
+.choice-option input {
   position: absolute;
   opacity: 0
 }
 
-.opt span {
+.choice-option span {
   display: flex;
   justify-content: space-between;
   gap: 8px;
   padding: 14px 16px;
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--color-border);
   border-radius: 12px;
   cursor: pointer;
   background: rgba(255, 255, 255, .04);
   transition: border-color .2s, background .2s
 }
 
-.opt span:hover {
+.choice-option span:hover {
   border-color: rgba(255, 255, 255, .35)
 }
 
-.opt input:checked+span {
-  border-color: var(--teal);
+.choice-option input:checked+span {
+  border-color: var(--color-accent);
   background: rgba(39, 211, 181, .14)
 }
 
-.opt input:focus-visible+span {
-  outline: 3px solid var(--teal);
+.choice-option input:focus-visible+span {
+  outline: 3px solid var(--color-accent);
   outline-offset: 2px
 }
 
-.slots {
+.time-slot-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
   gap: 8px
 }
 
-.slots .opt span {
+.time-slot-list .choice-option span {
   justify-content: center;
   padding: 11px 6px
 }
@@ -778,10 +778,10 @@ input[type=date],
 input[type=text],
 input[type=tel] {
   width: 100%;
-  font: 400 17px var(--b);
+  font: 400 17px var(--font-body);
   color: #fff;
   background: rgba(255, 255, 255, .05);
-  border: 1.5px solid var(--line);
+  border: 1.5px solid var(--color-border);
   border-radius: 12px;
   padding: 13px 14px
 }
@@ -790,85 +790,85 @@ input[type=date] {
   color-scheme: dark
 }
 
-.row {
+.form-row {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.msg {
+.form-message {
   min-height: 1.5em;
-  color: var(--mut);
+  color: var(--color-text-muted);
   margin: 0
 }
 
-.err {
+.form-error {
   color: #ff9d90
 }
 
-.ok {
-  border: 1.5px solid var(--teal);
+.booking-confirmation {
+  border: 1.5px solid var(--color-accent);
   border-radius: 14px;
   padding: 18px;
   margin-top: 20px;
   background: rgba(39, 211, 181, .08)
 }
 
-.book .btn {
+.booking-section .primary-button {
   margin-top: 4px
 }
 
 /* rodapé */
 footer {
   padding: 72px 0 48px;
-  border-top: 1px solid var(--line)
+  border-top: 1px solid var(--color-border)
 }
 
-.brand {
+.footer-brand {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 40px;
-  font: 800 28px/1 var(--h);
+  font: 800 28px/1 var(--font-display);
   letter-spacing: .06em;
   text-transform: uppercase
 }
 
-.info {
+.footer-contact-information {
   display: grid;
   gap: 32px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))
 }
 
-.info h3 {
-  font: 600 15px var(--b);
+.footer-contact-information h3 {
+  font: 600 15px var(--font-body);
   margin: 0 0 8px;
-  color: var(--teal)
+  color: var(--color-accent)
 }
 
-.info p {
+.footer-contact-information p {
   margin: 0;
-  color: var(--mut)
+  color: var(--color-text-muted)
 }
 
-.copyr {
+.footer-copyright {
   margin-top: 56px;
-  color: var(--mut);
+  color: var(--color-text-muted);
   font-size: 14px
 }
 
-.copyr #creator-credit {
+.footer-copyright #creator-credit-container {
   display: inline-flex;
   vertical-align: middle
 }
 
-.copyr .creator-credit {
+.footer-copyright .creator-credit {
   display: inline-flex;
   align-items: center;
   gap: 6px
 }
 
-.copyr .creator-credit img {
+.footer-copyright .creator-credit img {
   width: 20px;
   height: 20px;
   border-radius: 4px;
@@ -880,23 +880,23 @@ footer {
     scroll-behavior: auto
   }
 
-  .btn,
-  .copy {
+  .primary-button,
+  .intro-content {
     transition: none
   }
 
-  .hint span {
+  .cuts-video-hint span {
     animation: none
   }
 }
 
 /* ===== v3: mais escuro, mais refinado, pensado para celular ===== */
 :root {
-  --ink: #020706;
-  --forest: #050f0e;
-  --card: rgba(255, 255, 255, .035);
-  --line: rgba(255, 255, 255, .1);
-  --glow: rgba(39, 211, 181, .14)
+  --color-background: #020706;
+  --color-background-section: #050f0e;
+  --color-card: rgba(255, 255, 255, .035);
+  --color-border: rgba(255, 255, 255, .1);
+  --color-glow: rgba(39, 211, 181, .14)
 }
 
 html {
@@ -906,14 +906,14 @@ html {
 body {
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-  background: var(--ink)
+  background: var(--color-background)
 }
 
 button,
-.btn,
-.nav-cta,
-.mini,
-.arr,
+.primary-button,
+.booking-navigation-link,
+.service-book-button,
+.cuts-navigation-button,
 input {
   touch-action: manipulation
 }
@@ -929,23 +929,23 @@ section::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(700px 380px at 85% 0%, var(--glow), transparent 70%)
+  background: radial-gradient(700px 380px at 85% 0%, var(--color-glow), transparent 70%)
 }
 
-.light {
+.section-light {
   background: #030a09;
-  color: var(--fg)
+  color: var(--color-text)
 }
 
-.light .lead {
-  color: var(--mut)
+.section-light .section-description {
+  color: var(--color-text-muted)
 }
 
-.light :focus-visible {
-  outline-color: var(--teal)
+.section-light :focus-visible {
+  outline-color: var(--color-accent)
 }
 
-.book {
+.booking-section {
   background: linear-gradient(180deg, #030a09, #061413)
 }
 
@@ -964,72 +964,72 @@ h2::after {
   height: 3px;
   border-radius: 3px;
   margin-top: 14px;
-  background: linear-gradient(90deg, var(--teal), transparent)
+  background: linear-gradient(90deg, var(--color-accent), transparent)
 }
 
-.services {
+.service-cards {
   border: 0;
   display: grid;
   gap: 12px
 }
 
-.services li {
+.service-cards li {
   padding: 22px 24px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
-  background: var(--card);
+  background: var(--color-card);
   transition: border-color .25s, background .25s
 }
 
-.services li:hover {
+.service-cards li:hover {
   border-color: rgba(39, 211, 181, .5);
   background: rgba(39, 211, 181, .05)
 }
 
-.services small {
-  color: var(--mut)
+.service-cards small {
+  color: var(--color-text-muted)
 }
 
-.price {
-  color: var(--teal);
+.service-price {
+  color: var(--color-accent);
   text-shadow: 0 0 24px rgba(39, 211, 181, .35)
 }
 
-.mini {
+.service-book-button {
   border-color: rgba(255, 255, 255, .4);
   color: #fff;
   min-height: 44px
 }
 
-.mini:hover {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: var(--ink)
+.service-book-button:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-background)
 }
 
-#agendar form {
+#booking form {
   padding: 32px 28px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--color-border);
   border-radius: 28px;
   background: linear-gradient(160deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
   box-shadow: 0 40px 80px -40px #000
 }
 
-.opt span {
+.choice-option span {
   min-height: 48px;
   align-items: center;
   border-radius: 14px
 }
 
-.opt input:disabled+span {
+.choice-option input:disabled+span {
   opacity: .28;
   text-decoration: line-through;
   cursor: not-allowed;
   background: transparent
 }
 
-.opt input:disabled+span:hover {
-  border-color: var(--line)
+.choice-option input:disabled+span:hover {
+  border-color: var(--color-border)
 }
 
 input[type=date],
@@ -1039,25 +1039,29 @@ input[type=tel] {
   font-size: 16px
 }
 
-.btn {
+.primary-button {
   min-height: 50px;
   box-shadow: 0 10px 30px -10px rgba(39, 211, 181, .55)
 }
 
-.btn.ghost {
+.primary-button.secondary-button {
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55)
 }
 
-#agendar .btn {
+#booking .primary-button {
   width: 100%
 }
 
-.scrub {
-  border-radius: 24px;
-  box-shadow: 0 0 0 1px var(--line), 0 40px 80px -30px #000, 0 0 80px -30px var(--glow)
+.booking-confirmation .primary-button {
+  text-align: center
 }
 
-.hero::after {
+.cuts-video-scrubber {
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px var(--color-border), 0 40px 80px -30px #000, 0 0 80px -30px var(--color-glow)
+}
+
+.intro-section::after {
   background: linear-gradient(0deg, #020706, rgba(2, 7, 6, .65) 45%, transparent 78%)
 }
 
@@ -1066,7 +1070,7 @@ footer {
 }
 
 @media(max-width:600px) {
-  .wrap {
+  .page-container {
     width: calc(100% - 32px)
   }
 
@@ -1074,72 +1078,72 @@ footer {
     padding: 64px 0
   }
 
-  #agendar form {
+  #booking form {
     padding: 24px 18px;
     border-radius: 22px
   }
 
-  .services li {
+  .service-cards li {
     padding: 18px;
     border-radius: 16px
   }
 
-  .slots {
+  .time-slot-list {
     grid-template-columns: repeat(4, 1fr)
   }
 
-  .opts {
+  .choice-list {
     grid-template-columns: 1fr 1fr
   }
 
-  .btns .btn {
+  .intro-actions .primary-button {
     flex: 1 1 100%;
     text-align: center
   }
 
-  .copy p {
+  .intro-content p {
     font-size: 17px
   }
 }
 
 @media(max-width:360px) {
-  .slots {
+  .time-slot-list {
     grid-template-columns: repeat(3, 1fr)
   }
 
-  .opts {
+  .choice-list {
     grid-template-columns: 1fr
   }
 }
 
 /* ===== v4: metal escuro com raios turquesa (estilo da logo) ===== */
 :root {
-  --ink: #080d10;
-  --forest: #0b1115;
-  --teal: #2ff0dc;
-  --glow: rgba(47, 240, 220, .16);
-  --line: rgba(190, 215, 222, .16);
-  --chrome: linear-gradient(180deg, #fff 0%, #c4d0d3 48%, #f2f7f8 54%, #84949a 100%);
-  --metal: linear-gradient(160deg, #1c262b, #0e1418)
+  --color-background: #080d10;
+  --color-background-section: #0b1115;
+  --color-accent: #2ff0dc;
+  --color-glow: rgba(47, 240, 220, .16);
+  --color-border: rgba(190, 215, 222, .16);
+  --background-chrome: linear-gradient(180deg, #fff 0%, #c4d0d3 48%, #f2f7f8 54%, #84949a 100%);
+  --background-metal: linear-gradient(160deg, #1c262b, #0e1418)
 }
 
 body {
-  background: radial-gradient(900px 500px at 12% 0%, rgba(47, 240, 220, .07), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 1px, transparent 1px 4px), var(--ink)
+  background: radial-gradient(900px 500px at 12% 0%, rgba(47, 240, 220, .07), transparent 70%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .014) 0 1px, transparent 1px 4px), var(--color-background)
 }
 
-.light,
-.dark {
+.section-light,
+.section-dark {
   background: transparent;
-  color: var(--fg)
+  color: var(--color-text)
 }
 
-.dark,
-.light,
-.book {
+.section-dark,
+.section-light,
+.booking-section {
   border-top: 1px solid rgba(47, 240, 220, .22)
 }
 
-.book {
+.booking-section {
   background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .35))
 }
 
@@ -1149,12 +1153,12 @@ footer {
 }
 
 section::before {
-  background: radial-gradient(640px 360px at 88% 0%, var(--glow), transparent 70%)
+  background: radial-gradient(640px 360px at 88% 0%, var(--color-glow), transparent 70%)
 }
 
 h2,
-.copy h1 .w1 {
-  background: var(--chrome);
+.intro-content h1 .brand-name {
+  background: var(--background-chrome);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1164,16 +1168,16 @@ h2,
 h2::after {
   height: 4px;
   width: 72px;
-  box-shadow: 0 0 14px var(--teal)
+  box-shadow: 0 0 14px var(--color-accent)
 }
 
-.copy h1 .w2 {
-  color: var(--teal);
+.intro-content h1 .brand-subtitle {
+  color: var(--color-accent);
   text-shadow: 0 0 28px rgba(47, 240, 220, .55)
 }
 
-.logo img,
-.brand img {
+.site-logo img,
+.footer-brand img {
   border-radius: 12px;
   box-shadow: 0 0 0 1px rgba(190, 215, 222, .3), 0 0 16px rgba(47, 240, 220, .35)
 }
@@ -1186,72 +1190,72 @@ h2::after {
 }
 
 @media(min-width:860px) {
-  .copy .crest {
+  .intro-content .crest {
     width: clamp(300px, 34vw, 460px)
   }
 }
 
-.btn {
-  background: linear-gradient(180deg, #6af7e8, var(--teal) 55%, #12b8a6);
+.primary-button {
+  background: linear-gradient(180deg, #6af7e8, var(--color-accent) 55%, #12b8a6);
   color: #021311;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .25) inset, 0 12px 34px -10px rgba(47, 240, 220, .7)
 }
 
-.btn:hover {
+.primary-button:hover {
   background: linear-gradient(180deg, #8cfaee, #37f3df 55%, #17c7b4)
 }
 
-.nav-cta {
-  background: linear-gradient(180deg, #6af7e8, var(--teal));
+.booking-navigation-link {
+  background: linear-gradient(180deg, #6af7e8, var(--color-accent));
   box-shadow: 0 0 18px -4px rgba(47, 240, 220, .7)
 }
 
-.hero::after {
+.intro-section::after {
   background: linear-gradient(0deg, #080d10, rgba(8, 13, 16, .65) 45%, transparent 78%)
 }
 
-.services li,
-#agendar form {
-  background: var(--metal);
-  border: 1px solid var(--line);
+.service-cards li,
+#booking form {
+  background: var(--background-metal);
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .09) inset, 0 24px 50px -28px #000
 }
 
-.services li:hover {
-  border-color: var(--teal);
+.service-cards li:hover {
+  border-color: var(--color-accent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .09) inset, 0 0 30px -8px rgba(47, 240, 220, .5)
 }
 
-.price {
-  color: var(--teal)
+.service-price {
+  color: var(--color-accent)
 }
 
-.opt span,
+.choice-option span,
 input[type=date],
 input[type=text],
 input[type=tel] {
   background: rgba(0, 0, 0, .3);
-  border-color: var(--line)
+  border-color: var(--color-border)
 }
 
-.opt input:checked+span {
-  border-color: var(--teal);
+.choice-option input:checked+span {
+  border-color: var(--color-accent);
   background: rgba(47, 240, 220, .14);
-  box-shadow: 0 0 18px -6px var(--teal)
+  box-shadow: 0 0 18px -6px var(--color-accent)
 }
 
-.scrub {
+.cuts-video-scrubber {
   box-shadow: 0 0 0 1px rgba(190, 215, 222, .25), 0 0 60px -20px rgba(47, 240, 220, .5), 0 40px 80px -30px #000
 }
 
-.track i,
-.prog {
-  background: var(--teal);
-  box-shadow: 0 0 12px var(--teal)
+.cuts-video-progress-track i,
+.intro-progress-bar {
+  background: var(--color-accent);
+  box-shadow: 0 0 12px var(--color-accent)
 }
 
-.thumbs button[aria-current="true"] {
-  border-color: var(--teal);
+.cuts-thumbnails button[aria-current="true"] {
+  border-color: var(--color-accent);
   box-shadow: 0 0 14px rgba(47, 240, 220, .45)
 }
 
@@ -1262,15 +1266,15 @@ input[type=tel] {
 }
 
 /* ===== crocodilo que entra andando na seção Serviços ===== */
-#servicos {
+#services {
   overflow-x: clip
 }
 
-.sleft {
+.services-introduction {
   min-width: 0
 }
 
-.croc {
+.alligator-animation {
   position: relative;
   height: clamp(190px, 26vw, 330px);
   margin-top: 20px;
@@ -1278,14 +1282,14 @@ input[type=tel] {
 }
 
 @media(max-width:600px) {
-  .croc {
+  .alligator-animation {
     height: 200px;
     margin-top: 8px
   }
 }
 
-.croc canvas,
-.croc video.cw {
+.alligator-animation canvas,
+.alligator-animation video.alligator-webm-video {
   position: absolute;
   bottom: 0;
   max-width: none;
@@ -1293,12 +1297,12 @@ input[type=tel] {
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .55)) drop-shadow(0 0 26px rgba(47, 240, 220, .16))
 }
 
-.croc::after {
+.alligator-animation::after {
   content: "";
   position: absolute;
-  left: var(--gx, 50%);
+  left: var(--alligator-position-x, 50%);
   bottom: -6px;
-  width: var(--gw, 220px);
+  width: var(--alligator-shadow-width, 220px);
   height: 26px;
   transform: translateX(-50%) scale(.6);
   opacity: 0;
@@ -1307,20 +1311,20 @@ input[type=tel] {
   transition: opacity .9s, transform .9s
 }
 
-.croc.arrived::after {
+.alligator-animation.arrived::after {
   opacity: 1;
   transform: translateX(-50%) scale(1)
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .croc::after {
+  .alligator-animation::after {
     transition: none
   }
 }
 
 /* ===== v5: acabamento final ===== */
 ::selection {
-  background: var(--teal);
+  background: var(--color-accent);
   color: #021311
 }
 
@@ -1330,43 +1334,43 @@ body {
   -webkit-font-smoothing: antialiased
 }
 
-.logo {
+.site-logo {
   font-size: 26px;
   letter-spacing: .09em
 }
 
-.logo span {
-  background: var(--chrome);
+.site-logo span {
+  background: var(--background-chrome);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .7))
 }
 
-.logo em {
-  -webkit-text-fill-color: var(--teal);
+.site-logo em {
+  -webkit-text-fill-color: var(--color-accent);
   text-shadow: 0 0 16px rgba(47, 240, 220, .6)
 }
 
-.links a {
+.section-navigation a {
   position: relative
 }
 
-.links a::after {
+.section-navigation a::after {
   content: "";
   position: absolute;
   left: 12px;
   right: 12px;
   bottom: 3px;
   height: 2px;
-  background: var(--teal);
-  box-shadow: 0 0 10px var(--teal);
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
   transform: scaleX(0);
   transition: transform .3s
 }
 
-.links a:hover::after,
-.links a[aria-current="true"]::after {
+.section-navigation a:hover::after,
+.section-navigation a[aria-current="true"]::after {
   transform: scaleX(1)
 }
 
@@ -1374,10 +1378,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font: 600 13px/1 var(--b);
+  font: 600 13px/1 var(--font-body);
   letter-spacing: .28em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--color-accent);
   text-shadow: 0 0 18px rgba(47, 240, 220, .5)
 }
 
@@ -1385,52 +1389,52 @@ body {
   content: "";
   width: 36px;
   height: 2px;
-  background: var(--teal);
-  box-shadow: 0 0 12px var(--teal)
+  background: var(--color-accent);
+  box-shadow: 0 0 12px var(--color-accent)
 }
 
-.copy {
+.intro-content {
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   gap: 12px
 }
 
-.copy h1 {
+.intro-content h1 {
   font-size: clamp(64px, 15vw, 148px);
   line-height: .88;
   margin: 4px 0 10px;
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, .65))
 }
 
-.copy h1 .w1 {
+.intro-content h1 .brand-name {
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .6)) drop-shadow(0 0 22px rgba(47, 240, 220, .35))
 }
 
-.copy h1 .w2 {
+.intro-content h1 .brand-subtitle {
   letter-spacing: .14em;
   font-size: .62em
 }
 
-.copy p {
+.intro-content p {
   font-size: 20px;
   color: #e3eeec;
   text-shadow: 0 2px 14px rgba(0, 0, 0, .7)
 }
 
-.hero::after {
+.intro-section::after {
   background: linear-gradient(0deg, #080d10 0%, rgba(8, 13, 16, .72) 38%, transparent 78%), linear-gradient(180deg, rgba(8, 13, 16, .55), transparent 22%)
 }
 
-.btn {
+.primary-button {
   letter-spacing: .02em;
   padding: 16px 34px
 }
 
-.btn:hover {
+.primary-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .3) inset, 0 16px 40px -10px rgba(47, 240, 220, .85)
 }
 
-.btn.ghost {
+.primary-button.secondary-button {
   background: rgba(255, 255, 255, .04);
   backdrop-filter: blur(6px);
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5)
@@ -1444,17 +1448,17 @@ h2 {
   letter-spacing: .03em
 }
 
-.lead {
+.section-description {
   font-size: 18px;
   line-height: 1.7
 }
 
-.services li {
+.service-cards li {
   position: relative;
   overflow: hidden
 }
 
-.services li::before {
+.service-cards li::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1462,43 +1466,43 @@ h2 {
   bottom: 18%;
   width: 3px;
   border-radius: 3px;
-  background: var(--teal);
-  box-shadow: 0 0 14px var(--teal);
+  background: var(--color-accent);
+  box-shadow: 0 0 14px var(--color-accent);
   opacity: 0;
   transition: opacity .3s
 }
 
-.services li:hover {
+.service-cards li:hover {
   transform: translateY(-3px)
 }
 
-.services li:hover::before {
+.service-cards li:hover::before {
   opacity: 1
 }
 
-.services li {
+.service-cards li {
   transition: border-color .3s, box-shadow .3s, transform .3s
 }
 
-.services strong {
+.service-cards strong {
   font-size: 23px;
   letter-spacing: .01em
 }
 
-.price {
+.service-price {
   font-size: 42px
 }
 
-#agendar form {
+#booking form {
   border-radius: 32px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, .1) inset, 0 50px 90px -40px #000, 0 0 70px -40px rgba(47, 240, 220, .45)
 }
 
 legend {
-  font: 700 13px var(--b);
+  font: 700 13px var(--font-body);
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--color-accent);
   margin-bottom: 12px
 }
 
@@ -1506,64 +1510,64 @@ input[type=date]:focus,
 input[type=text]:focus,
 input[type=tel]:focus {
   outline: none;
-  border-color: var(--teal);
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 4px rgba(47, 240, 220, .15)
 }
 
-.opt span:hover {
+.choice-option span:hover {
   transform: translateY(-1px)
 }
 
-.cap strong {
+.cuts-caption strong {
   letter-spacing: .06em
 }
 
-.thumbs button:hover {
+.cuts-thumbnails button:hover {
   opacity: .85
 }
 
-.arr:hover {
-  box-shadow: 0 0 18px -4px var(--teal)
+.cuts-navigation-button:hover {
+  box-shadow: 0 0 18px -4px var(--color-accent)
 }
 
 footer {
   padding: 88px 0 48px
 }
 
-.brand {
+.footer-brand {
   font-size: 32px;
   margin-bottom: 48px
 }
 
-.info>div {
+.footer-contact-information>div {
   padding-left: 18px;
   border-left: 2px solid rgba(47, 240, 220, .35)
 }
 
-.info h3 {
+.footer-contact-information h3 {
   letter-spacing: .18em;
   text-transform: uppercase;
   font-size: 13px
 }
 
-.info p {
+.footer-contact-information p {
   line-height: 1.8
 }
 
-.reveal {
+.reveal-on-scroll {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity .8s, transform .8s
 }
 
-.reveal.in {
+.reveal-on-scroll.is-visible {
   opacity: 1;
   transform: none
 }
 
-.dark .cgrid>div:first-child,
-.light .sleft,
-.book .grid>div:first-child {
+.section-dark .cuts-layout>div:first-child,
+.section-light .services-introduction,
+.booking-section .booking-layout>div:first-child {
   position: relative
 }
 
@@ -1572,7 +1576,7 @@ footer {
     padding: 72px 0
   }
 
-  .copy h1 {
+  .intro-content h1 {
     font-size: clamp(58px, 19vw, 92px)
   }
 
@@ -1581,72 +1585,72 @@ footer {
     letter-spacing: .22em
   }
 
-  .price {
+  .service-price {
     font-size: 34px
   }
 
-  .info>div {
+  .footer-contact-information>div {
     padding-left: 14px
   }
 }
 
 @media(prefers-reduced-motion:reduce) {
-  .reveal {
+  .reveal-on-scroll {
     opacity: 1;
     transform: none;
     transition: none
   }
 
-  .links a::after,
-  .services li {
+  .section-navigation a::after,
+  .service-cards li {
     transition: none
   }
 }
 
-/* ===== Horários ocupados (gerados pelo script do Akitas com a classe .ocupado) ===== */
-.opt.ocupado input {
+/* ===== Horários ocupados (gerados pelo script do Akitas com a classe .is-full) ===== */
+.choice-option.is-full input {
   display: none
 }
 
-.opt.ocupado span {
+.choice-option.is-full span {
   opacity: .28;
   text-decoration: line-through;
   cursor: not-allowed;
   background: transparent
 }
 
-.opt.ocupado span:hover {
-  border-color: var(--line);
+.choice-option.is-full span:hover {
+  border-color: var(--color-border);
   transform: none
 }
 
 /* ===== Logo em uma linha no celular ===== */
-.logo span {
+.site-logo span {
   white-space: nowrap
 }
 
 @media(max-width:400px) {
-  .logo {
+  .site-logo {
     font-size: 18px;
     gap: 8px
   }
 
-  .logo img {
+  .site-logo img {
     width: 32px;
     height: 32px
   }
 }
 
 /* ===== Turnos (manhã / tarde / noite) ===== */
-.opts.turnos {
+.choice-list.time-slot-options {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr))
 }
 
-.turnos .opt span {
+.time-slot-options .choice-option span {
   align-items: center
 }
 
-.turnos .tn {
+.time-slot-options .time-slot-details {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1657,26 +1661,26 @@ footer {
   cursor: inherit
 }
 
-.turnos .tn small {
-  color: var(--mut);
+.time-slot-options .time-slot-details small {
+  color: var(--color-text-muted);
   font-weight: 400
 }
 
-.turnos .opt b {
+.time-slot-options .choice-option b {
   font-size: 13px;
   white-space: nowrap
 }
 
-.turnos .opt.ocupado span {
+.time-slot-options .choice-option.is-full span {
   text-decoration: none
 }
 
-.turnos .opt.ocupado .tn {
+.time-slot-options .choice-option.is-full .time-slot-details {
   text-decoration: line-through
 }
 
 /* ===== Barbeiros entrando ao selecionar o nome ===== */
-.stage {
+.barber-video-stage {
   position: relative;
   height: clamp(340px, 92vw, 460px);
   margin-top: 8px;
@@ -1686,7 +1690,7 @@ footer {
   user-select: none
 }
 
-.barber {
+.barber-video {
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -1706,7 +1710,7 @@ footer {
   mask-image: radial-gradient(ellipse 52% 54% at 50% 46%, #000 58%, transparent 100%)
 }
 
-.barber.on {
+.barber-video.is-active {
   opacity: 1;
   visibility: visible;
   transform: translate3d(-50%, 0, 0) scale(1);
@@ -1714,21 +1718,21 @@ footer {
 }
 
 @media(min-width:860px) {
-  .book .grid {
+  .booking-section .booking-layout {
     row-gap: 0
   }
 
-  .book .grid>form {
+  .booking-section .booking-layout>form {
     grid-column: 2;
     grid-row: 1 / span 2
   }
 
-  .book .grid>div:first-child {
+  .booking-section .booking-layout>div:first-child {
     grid-column: 1;
     grid-row: 1
   }
 
-  .stage {
+  .barber-video-stage {
     grid-column: 1;
     grid-row: 2;
     height: auto;
@@ -1736,26 +1740,26 @@ footer {
     margin-top: 24px
   }
 
-  .barber {
+  .barber-video {
     height: min(100%, 620px);
     transform: translate3d(-150%, 0, 0) scale(.97)
   }
 
-  .barber.on {
+  .barber-video.is-active {
     transform: translate3d(-50%, 0, 0) scale(1)
   }
 }
 
 @media(prefers-reduced-motion:reduce) {
 
-  .barber,
-  .barber.on {
+  .barber-video,
+  .barber-video.is-active {
     transition: opacity .3s, visibility 0s;
     transform: translate3d(-50%, 0, 0)
   }
 }
 
 /* o blend "screen" dos vídeos precisa enxergar o fundo real da página (textura + brilho) */
-#agendar {
+#booking {
   isolation: auto
 }

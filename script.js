@@ -1,163 +1,165 @@
 /* ===== Agendamento ===== */
 
-let CONFIG;
-let consultaVagas = 0;
+let appointmentConfig;
+let slotRequestVersion = 0;
 
-const $ = id => document.getElementById(id);
+const getById = id => document.getElementById(id);
 
-const svc = $("svc"),
-  serviceList = $("service-list"),
-  sl = $("sl"),
-  d = $("d"),
-  barOpts = $("bar-opts");
+const bookingServiceOptions = getById("booking-service-options"),
+  serviceCards = getById("service-cards"),
+  bookingTimeOptions = getById("booking-time-options"),
+  appointmentDateInput = getById("booking-date"),
+  barberOptions = getById("booking-barber-options");
 
-const enviar = $("f").querySelector("button[type=submit]");
+const submitButton = getById("booking-form").querySelector("button[type=submit]");
 
-function formatarPreco(preco) {
-  if (typeof preco !== "number" || !Number.isFinite(preco) || preco < 0) {
+function formatPrice(servicePrice) {
+  if (typeof servicePrice !== "number" || !Number.isFinite(servicePrice) || servicePrice < 0) {
     throw new Error("Preço de serviço inválido.");
   }
-  const temCentavos = !Number.isInteger(preco);
+  const hasCents = !Number.isInteger(servicePrice);
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-    minimumFractionDigits: temCentavos ? 2 : 0,
+    minimumFractionDigits: hasCents ? 2 : 0,
     maximumFractionDigits: 2
-  }).format(preco);
+  }).format(servicePrice);
 }
 
-const relogio = new Intl.DateTimeFormat("en-GB", {
+const barbershopClockFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "America/Sao_Paulo",
   year: "numeric", month: "2-digit", day: "2-digit",
   hour: "2-digit", minute: "2-digit", hourCycle: "h23"
 });
 
-function horarioBarbearia() {
-  const partes = Object.fromEntries(relogio.formatToParts(new Date()).map(p => [p.type, p.value]));
+function getBarbershopLocalTime() {
+  const dateTimeParts = Object.fromEntries(
+    barbershopClockFormatter.formatToParts(new Date()).map(part => [part.type, part.value])
+  );
   return {
-    data: `${partes.year}-${partes.month}-${partes.day}`,
-    minutos: Number(partes.hour) * 60 + Number(partes.minute)
+    date: `${dateTimeParts.year}-${dateTimeParts.month}-${dateTimeParts.day}`,
+    minutes: Number(dateTimeParts.hour) * 60 + Number(dateTimeParts.minute)
   };
 }
 
-function atualizarLimitesData() {
-  d.min = horarioBarbearia().data;
-  const max = new Date(`${d.min}T12:00:00Z`);
-  max.setUTCDate(max.getUTCDate() + 60);
-  d.max = max.toISOString().slice(0, 10);
+function updateAppointmentDateLimits() {
+  appointmentDateInput.min = getBarbershopLocalTime().date;
+  const maximumDate = new Date(`${appointmentDateInput.min}T12:00:00Z`);
+  maximumDate.setUTCDate(maximumDate.getUTCDate() + 60);
+  appointmentDateInput.max = maximumDate.toISOString().slice(0, 10);
 }
 
-atualizarLimitesData();
+updateAppointmentDateLimits();
 
-async function supabaseRPC(funcao, parametros = {}) {
-  const resp = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/rpc/${funcao}`, {
+async function callSupabaseRpc(rpcName, rpcParameters = {}) {
+  const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/rpc/${rpcName}`, {
     method: "POST",
     headers: {
       apikey: SUPABASE_CONFIG.publishableKey,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(parametros)
+    body: JSON.stringify(rpcParameters)
   });
-  const resultado = await resp.json();
-  if (!resp.ok) {
-    console.error(`Erro no Supabase (${funcao}):`, resultado);
-    throw new Error(resultado.code === "22023"
-      ? resultado.message
+  const rpcResult = await response.json();
+  if (!response.ok) {
+    console.error(`Erro no Supabase (${rpcName}):`, rpcResult);
+    throw new Error(rpcResult.code === "22023"
+      ? rpcResult.message
       : "Não foi possível acessar os agendamentos. Tente novamente mais tarde.");
   }
-  return resultado;
+  return rpcResult;
 }
 
-const hhmm = t => {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
+const timeToMinutes = time => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
 };
 
-function renderBarbeiros() {
-  barOpts.replaceChildren();
-  CONFIG.barbeiros.forEach(({ nome }) => {
-    const option = document.createElement("label");
-    option.className = "opt";
+function renderBarberOptions() {
+  barberOptions.replaceChildren();
+  appointmentConfig.barbeiros.forEach(({ nome: barberName }) => {
+    const barberOption = document.createElement("label");
+    barberOption.className = "choice-option";
 
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "b";
-    input.value = nome;
+    const barberInput = document.createElement("input");
+    barberInput.type = "radio";
+    barberInput.name = "barber";
+    barberInput.value = barberName;
 
-    const label = document.createElement("span");
-    label.textContent = nome;
-    option.append(input, label);
-    barOpts.append(option);
+    const barberLabel = document.createElement("span");
+    barberLabel.textContent = barberName;
+    barberOption.append(barberInput, barberLabel);
+    barberOptions.append(barberOption);
   });
 }
 
-function renderServicos(servicos) {
-  const opcoes = document.createDocumentFragment();
-  const cards = document.createDocumentFragment();
+function renderServiceOptions(services) {
+  const serviceOptionsFragment = document.createDocumentFragment();
+  const serviceCardsFragment = document.createDocumentFragment();
 
-  servicos.forEach(({ nome, descricao, preco }) => {
-    const precoFormatado = formatarPreco(preco);
+  services.forEach(({ nome: serviceName, descricao: serviceDescription, preco: servicePrice }) => {
+    const formattedPrice = formatPrice(servicePrice);
 
-    const opcao = document.createElement("label");
-    opcao.className = "opt";
+    const serviceOption = document.createElement("label");
+    serviceOption.className = "choice-option";
 
-    const entrada = document.createElement("input");
-    entrada.type = "radio";
-    entrada.name = "s";
-    entrada.value = nome;
+    const serviceInput = document.createElement("input");
+    serviceInput.type = "radio";
+    serviceInput.name = "service";
+    serviceInput.value = serviceName;
 
-    const rotulo = document.createElement("span");
-    rotulo.append(document.createTextNode(nome));
+    const serviceLabel = document.createElement("span");
+    serviceLabel.append(document.createTextNode(serviceName));
 
-    const precoOpcao = document.createElement("b");
-    precoOpcao.textContent = precoFormatado;
-    rotulo.append(precoOpcao);
-    opcao.append(entrada, rotulo);
-    opcoes.append(opcao);
+    const optionPrice = document.createElement("b");
+    optionPrice.textContent = formattedPrice;
+    serviceLabel.append(optionPrice);
+    serviceOption.append(serviceInput, serviceLabel);
+    serviceOptionsFragment.append(serviceOption);
 
-    const cartao = document.createElement("li");
-    const detalhes = document.createElement("div");
+    const serviceCard = document.createElement("li");
+    const serviceDetails = document.createElement("div");
 
-    const titulo = document.createElement("strong");
-    titulo.textContent = nome;
+    const serviceTitle = document.createElement("strong");
+    serviceTitle.textContent = serviceName;
 
-    const texto = document.createElement("small");
-    texto.textContent = descricao;
-    detalhes.append(titulo, texto);
+    const serviceDescriptionText = document.createElement("small");
+    serviceDescriptionText.textContent = serviceDescription;
+    serviceDetails.append(serviceTitle, serviceDescriptionText);
 
-    const precoCartao = document.createElement("span");
-    precoCartao.className = "price";
-    precoCartao.textContent = precoFormatado;
+    const cardPrice = document.createElement("span");
+    cardPrice.className = "service-price";
+    cardPrice.textContent = formattedPrice;
 
-    const agendar = document.createElement("button");
-    agendar.type = "button";
-    agendar.className = "mini";
-    agendar.dataset.s = nome;
-    agendar.textContent = "Agendar";
+    const bookingButton = document.createElement("button");
+    bookingButton.type = "button";
+    bookingButton.className = "service-book-button";
+    bookingButton.dataset.service = serviceName;
+    bookingButton.textContent = "Agendar";
 
-    cartao.append(detalhes, precoCartao, agendar);
-    cards.append(cartao);
+    serviceCard.append(serviceDetails, cardPrice, bookingButton);
+    serviceCardsFragment.append(serviceCard);
   });
 
-  svc.replaceChildren(opcoes);
-  serviceList.replaceChildren(cards);
-  $("services-status").hidden = true;
+  bookingServiceOptions.replaceChildren(serviceOptionsFragment);
+  serviceCards.replaceChildren(serviceCardsFragment);
+  getById("service-loading-status").hidden = true;
 }
 
-function renderCreditos(creditos) {
-  const urlValida = value => {
+function renderCreatorCredits(credits) {
+  const isValidHttpsUrl = url => {
     try {
-      return new URL(value).protocol === "https:";
+      return new URL(url).protocol === "https:";
     } catch {
       return false;
     }
   };
   if (
-    !creditos ||
-    typeof creditos.nome !== "string" ||
-    !creditos.nome.trim() ||
-    !urlValida(creditos.url) ||
-    !urlValida(creditos.imagem)
+    !credits ||
+    typeof credits.nome !== "string" ||
+    !credits.nome.trim() ||
+    !isValidHttpsUrl(credits.url) ||
+    !isValidHttpsUrl(credits.imagem)
   ) {
     console.error("Configure nome, link e imagem válidos para os créditos no Supabase.");
     return;
@@ -165,249 +167,252 @@ function renderCreditos(creditos) {
 
   const link = document.createElement("a");
   link.className = "creator-credit";
-  link.href = creditos.url;
+  link.href = credits.url;
   link.target = "_blank";
   link.rel = "noopener noreferrer";
 
   const imagem = document.createElement("img");
-  imagem.src = creditos.imagem;
+  imagem.src = credits.imagem;
   imagem.alt = "";
   imagem.width = 20;
   imagem.height = 20;
 
   const nome = document.createElement("span");
-  nome.textContent = creditos.nome;
+  nome.textContent = credits.nome;
   link.append(imagem, nome);
-  $("creator-credit").replaceChildren(link);
+  getById("creator-credit-container").replaceChildren(link);
 }
 
-async function carregarConfig() {
+async function loadAppointmentConfig() {
   try {
-    CONFIG = await supabaseRPC("config_agendamentos");
-    const servicosValidos = Array.isArray(CONFIG.servicos) &&
-      CONFIG.servicos.length > 0 &&
-      CONFIG.servicos.every(servico =>
-        typeof servico?.nome === "string" &&
-        servico.nome.trim() &&
-        typeof servico.descricao === "string" &&
-        servico.descricao.trim() &&
-        typeof servico.preco === "number" &&
-        Number.isFinite(servico.preco) &&
-        servico.preco >= 0
+    appointmentConfig = await callSupabaseRpc("config_agendamentos");
+    const hasValidServices = Array.isArray(appointmentConfig.servicos) &&
+      appointmentConfig.servicos.length > 0 &&
+      appointmentConfig.servicos.every(service =>
+        typeof service?.nome === "string" &&
+        service.nome.trim() &&
+        typeof service.descricao === "string" &&
+        service.descricao.trim() &&
+        typeof service.preco === "number" &&
+        Number.isFinite(service.preco) &&
+        service.preco >= 0
       ) &&
-      new Set(CONFIG.servicos.map(({ nome }) => nome)).size === CONFIG.servicos.length;
-    if (!servicosValidos) {
+      new Set(appointmentConfig.servicos.map(({ nome }) => nome)).size === appointmentConfig.servicos.length;
+    if (!hasValidServices) {
       throw new Error("Configure nomes únicos, descrição e preço válidos para cada serviço no Supabase.");
     }
 
-    const contatosValidos = Array.isArray(CONFIG.barbeiros) &&
-      CONFIG.barbeiros.length > 0 &&
-      CONFIG.barbeiros.every(({ nome, tel }) =>
+    const hasValidBarberContacts = Array.isArray(appointmentConfig.barbeiros) &&
+      appointmentConfig.barbeiros.length > 0 &&
+      appointmentConfig.barbeiros.every(({ nome, tel }) =>
         typeof nome === "string" &&
         nome.trim() &&
         typeof tel === "string" &&
         /^\d{10,15}$/.test(tel)
     );
-    if (!contatosValidos) {
+    if (!hasValidBarberContacts) {
       throw new Error("Configure nome e telefone válidos para cada barbeiro no Supabase.");
     }
 
-    renderServicos(CONFIG.servicos);
-    renderBarbeiros();
-    enviar.disabled = false;
-    enviar.textContent = "Enviar pedido de agendamento";
+    renderServiceOptions(appointmentConfig.servicos);
+    renderBarberOptions();
+    submitButton.disabled = false;
+    submitButton.textContent = "Enviar pedido de agendamento";
   } catch (err) {
     console.error("Erro ao carregar configuração:", err);
-    $("services-status").textContent = "Não foi possível carregar os serviços. Tente novamente mais tarde.";
-    $("e").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
-    enviar.disabled = true;
-    enviar.textContent = "Agendamento indisponível";
+    getById("service-loading-status").textContent = "Não foi possível carregar os serviços. Tente novamente mais tarde.";
+    getById("booking-error").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
+    submitButton.disabled = true;
+    submitButton.textContent = "Agendamento indisponível";
   }
 }
 
-carregarConfig();
+loadAppointmentConfig();
 
-async function carregarCreditos() {
+async function loadCreatorCredits() {
   try {
-    const creditos = await supabaseRPC("config_creditos");
-    renderCreditos(creditos);
+    const credits = await callSupabaseRpc("config_creditos");
+    renderCreatorCredits(credits);
   } catch (err) {
     console.error("Erro ao carregar os créditos do rodapé:", err);
   }
 }
 
-carregarCreditos();
+loadCreatorCredits();
 
-// Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam
-async function slots() {
-  const consulta = ++consultaVagas;
-  sl.innerHTML = "";
-  atualizarLimitesData();
+// Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam.
+async function loadAvailableTimeSlots() {
+  const requestVersion = ++slotRequestVersion;
+  bookingTimeOptions.replaceChildren();
+  updateAppointmentDateLimits();
 
-  const v = d.value;
-  const barbeiro = document.querySelector("input[name=b]:checked")?.value;
+  const selectedDate = appointmentDateInput.value;
+  const selectedBarber = document.querySelector("input[name=barber]:checked")?.value;
 
-  if (!v || !barbeiro) {
-    $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+  if (!selectedDate || !selectedBarber) {
+    getById("booking-time-message").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
     return;
   }
 
-  if (v < d.min || v > d.max) {
-    $("sm").textContent = "Escolha uma data entre hoje e os próximos 60 dias.";
+  if (selectedDate < appointmentDateInput.min || selectedDate > appointmentDateInput.max) {
+    getById("booking-time-message").textContent = "Escolha uma data entre hoje e os próximos 60 dias.";
     return;
   }
 
-  const w = new Date(`${v}T12:00:00Z`).getUTCDay();
-  // variaveis dos dias fechados da semana
-  const firstDayClose = 0;
-  const secondDayClose = 1;
+  const weekday = new Date(`${selectedDate}T12:00:00Z`).getUTCDay();
+  const sundayIndex = 0;
+  const mondayIndex = 1;
 
-  $("dm").textContent = "";
+  getById("booking-date-message").textContent = "";
 
-  if (w === firstDayClose || w === secondDayClose) {
-    $("sm").textContent = "Fechado neste dia. Escolha de terça a sábado.";
+  if (weekday === sundayIndex || weekday === mondayIndex) {
+    getById("booking-time-message").textContent = "Fechado neste dia. Escolha de terça a sábado.";
     return;
   }
 
-  $("sm").textContent = "Consultando vagas...";
-  let vagas;
+  getById("booking-time-message").textContent = "Consultando vagas...";
+  let slotAvailability;
   try {
-    const resultado = await supabaseRPC("vagas_agendamentos", { p_data: v });
-    if (consulta !== consultaVagas) return;
-    vagas = resultado.vagas;
-    if (!CONFIG.turnos.every(t => Number.isInteger(vagas?.[barbeiro]?.[t.id]?.restantes))) {
+    const availabilityResponse = await callSupabaseRpc("vagas_agendamentos", { p_data: selectedDate });
+    if (requestVersion !== slotRequestVersion) return;
+    slotAvailability = availabilityResponse.vagas;
+    if (!appointmentConfig.turnos.every(timeSlot =>
+      Number.isInteger(slotAvailability?.[selectedBarber]?.[timeSlot.id]?.restantes)
+    )) {
       throw new Error("Resposta de vagas inválida");
     }
   } catch (err) {
-    if (consulta !== consultaVagas) return;
+    if (requestVersion !== slotRequestVersion) return;
     console.error("Erro ao consultar vagas:", err);
-    $("sm").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
+    getById("booking-time-message").textContent = "Não foi possível consultar as vagas. Selecione novamente o dia ou o barbeiro para tentar de novo.";
     return;
   }
-  const agora = horarioBarbearia();
-  const ehHoje = v === agora.data;
-  let any = false;
+  const currentLocalTime = getBarbershopLocalTime();
+  const isToday = selectedDate === currentLocalTime.date;
+  let hasAvailableSlots = false;
 
-  for (const t of CONFIG.turnos) {
+  for (const timeSlot of appointmentConfig.turnos) {
     // Sábado: sem turno da noite (fecha às 18h)
-    if (w === 6 && t.id === "noite") continue;
+    if (weekday === 6 && timeSlot.id === "noite") continue;
     // Turno de hoje que já terminou
-    if (ehHoje && hhmm(t.fim) <= agora.minutos) continue;
+    if (isToday && timeToMinutes(timeSlot.fim) <= currentLocalTime.minutes) continue;
 
-    const restantes = vagas[barbeiro][t.id].restantes;
-    const lotado = restantes <= 0;
-    const info = lotado
+    const remainingSlots = slotAvailability[selectedBarber][timeSlot.id].restantes;
+    const isFull = remainingSlots <= 0;
+    const availabilityLabel = isFull
       ? "Lotado"
-      : `${restantes} ${restantes === 1 ? "vaga" : "vagas"}`;
+      : `${remainingSlots} ${remainingSlots === 1 ? "vaga" : "vagas"}`;
 
-    if (!lotado) any = true;
+    if (!isFull) hasAvailableSlots = true;
 
-    sl.insertAdjacentHTML(
+    bookingTimeOptions.insertAdjacentHTML(
       "beforeend",
-      `<label class="opt${lotado ? " ocupado" : ""}"><input type="radio" name="h" value="${t.id}" ${lotado ? "disabled" : ""}><span><span class="tn">${t.nome}<small>${t.inicio} às ${t.fim}</small></span><b>${info}</b></span></label>`
+      `<label class="choice-option${isFull ? " is-full" : ""}"><input type="radio" name="shift" value="${timeSlot.id}" ${isFull ? "disabled" : ""}><span><span class="time-slot-details">${timeSlot.nome}<small>${timeSlot.inicio} às ${timeSlot.fim}</small></span><b>${availabilityLabel}</b></span></label>`
     );
   }
 
-  $("sm").textContent = any ? "" : "Sem vagas para este barbeiro neste dia. Escolha outro barbeiro ou outro dia.";
+  getById("booking-time-message").textContent = hasAvailableSlots
+    ? ""
+    : "Sem vagas para este barbeiro neste dia. Escolha outro barbeiro ou outro dia.";
 }
 
-d.addEventListener("change", slots);
-barOpts.addEventListener("change", slots);
+appointmentDateInput.addEventListener("change", loadAvailableTimeSlots);
+barberOptions.addEventListener("change", loadAvailableTimeSlots);
 
-serviceList.addEventListener("click", event => {
-  const botao = event.target.closest("button.mini");
-  if (!botao) return;
+serviceCards.addEventListener("click", event => {
+  const bookingButton = event.target.closest("button.service-book-button");
+  if (!bookingButton) return;
 
-  const servico = [...svc.querySelectorAll('input[name="s"]')]
-    .find(entrada => entrada.value === botao.dataset.s);
-  if (servico) servico.checked = true;
+  const selectedServiceInput = [...bookingServiceOptions.querySelectorAll('input[name="service"]')]
+    .find(serviceInput => serviceInput.value === bookingButton.dataset.service);
+  if (selectedServiceInput) selectedServiceInput.checked = true;
 
-  $("agendar").scrollIntoView({ behavior: "smooth" });
+  getById("booking").scrollIntoView({ behavior: "smooth" });
 });
 
-$("f").addEventListener("submit", async e => {
-  e.preventDefault();
+getById("booking-form").addEventListener("submit", async event => {
+  event.preventDefault();
 
-  const s = document.querySelector("input[name=s]:checked"),
-    b = document.querySelector("input[name=b]:checked"),
-    h = document.querySelector("input[name=h]:checked"),
-    n = $("n").value.trim(),
-    t = $("t").value.trim();
+  const selectedService = document.querySelector("input[name=service]:checked"),
+    selectedBarber = document.querySelector("input[name=barber]:checked"),
+    selectedShift = document.querySelector("input[name=shift]:checked"),
+    customerName = getById("customer-name").value.trim(),
+    customerPhone = getById("customer-phone").value.trim();
 
-  const err = $("e");
-  const ok = $("ok");
+  const errorMessage = getById("booking-error");
+  const confirmation = getById("booking-confirmation");
 
-  err.textContent = "";
-  ok.hidden = true;
+  errorMessage.textContent = "";
+  confirmation.hidden = true;
 
-  if (enviar.disabled) return;
-  if (!s) return err.textContent = "Escolha um serviço.";
-  if (!b) return err.textContent = "Escolha o barbeiro.";
-  const barbeiroConfig = CONFIG.barbeiros.find(({ nome }) => nome === b.value);
-  if (!barbeiroConfig) return err.textContent = "Selecione um barbeiro válido.";
-  if (!d.value) return err.textContent = "Escolha o dia do atendimento.";
-  if (!h) return err.textContent = "Escolha um turno.";
-  if (n.length < 2) return err.textContent = "Informe seu nome.";
-  if (t.replace(/\D/g, "").length < 10) return err.textContent = "Informe um telefone com DDD.";
+  if (submitButton.disabled) return;
+  if (!selectedService) return errorMessage.textContent = "Escolha um serviço.";
+  if (!selectedBarber) return errorMessage.textContent = "Escolha o barbeiro.";
+  const selectedBarberConfig = appointmentConfig.barbeiros.find(({ nome }) => nome === selectedBarber.value);
+  if (!selectedBarberConfig) return errorMessage.textContent = "Selecione um barbeiro válido.";
+  if (!appointmentDateInput.value) return errorMessage.textContent = "Escolha o dia do atendimento.";
+  if (!selectedShift) return errorMessage.textContent = "Escolha um turno.";
+  if (customerName.length < 2) return errorMessage.textContent = "Informe seu nome.";
+  if (customerPhone.replace(/\D/g, "").length < 10) return errorMessage.textContent = "Informe um telefone com DDD.";
 
-  const [y, m, dd] = d.value.split("-");
-  const dataISO = `${y}-${m}-${dd}`;
-  const dataBR = `${dd}/${m}/${y}`;
+  const [year, month, day] = appointmentDateInput.value.split("-");
+  const appointmentDateISO = `${year}-${month}-${day}`;
+  const appointmentDateFormatted = `${day}/${month}/${year}`;
 
-  const turno = CONFIG.turnos.find(t => t.id === h.value);
-  const turnoTxt = `${turno.nome} (${turno.inicio} às ${turno.fim})`;
+  const selectedTimeSlot = appointmentConfig.turnos.find(timeSlot => timeSlot.id === selectedShift.value);
+  const shiftDescription = `${selectedTimeSlot.nome} (${selectedTimeSlot.inicio} às ${selectedTimeSlot.fim})`;
 
-  enviar.disabled = true;
-  enviar.textContent = "Reservando...";
+  submitButton.disabled = true;
+  submitButton.textContent = "Reservando...";
   try {
-    const result = await supabaseRPC("criar_agendamento", {
-      p_nome: n,
-      p_telefone: t,
-      p_servico: s.value,
-      p_data: dataISO,
-      p_barbeiro: b.value,
-      p_turno: h.value
+    const bookingResult = await callSupabaseRpc("criar_agendamento", {
+      p_nome: customerName,
+      p_telefone: customerPhone,
+      p_servico: selectedService.value,
+      p_data: appointmentDateISO,
+      p_barbeiro: selectedBarber.value,
+      p_turno: selectedShift.value
     });
 
-    if (result.success !== true) {
-      err.textContent = result.error || "Não foi possível reservar este turno.";
-      slots();
+    if (bookingResult.success !== true) {
+      errorMessage.textContent = bookingResult.error || "Não foi possível reservar este turno.";
+      loadAvailableTimeSlots();
       return;
     }
 
-    const txt = `Olá, Os Malas! Reservei ${s.value} com ${b.value}, dia ${dataBR}, turno ${turnoTxt}. Nome: ${n}. Telefone: ${t}.`;
+    const whatsappMessage = `Olá, Os Malas! Reservei ${selectedService.value} com ${selectedBarber.value}, dia ${appointmentDateFormatted}, turno ${shiftDescription}. Nome: ${customerName}. Telefone: ${customerPhone}.`;
 
-    const url = `https://wa.me/${barbeiroConfig.tel}?text=${encodeURIComponent(txt)}`;
+    const whatsappUrl = `https://wa.me/${selectedBarberConfig.tel}?text=${encodeURIComponent(whatsappMessage)}`;
 
-    ok.hidden = false;
-    ok.innerHTML = `
+    confirmation.hidden = false;
+    confirmation.innerHTML = `
             <strong>✅ Agendamento confirmado!</strong>
-            <p class="msg"><strong>Serviço:</strong> ${s.value}<br>
-            <strong>Barbeiro:</strong> ${b.value}<br>
-            <strong>Dia:</strong> ${dataBR}<br>
-            <strong>Turno:</strong> ${turnoTxt}<br>
-            <strong>Nome:</strong> <span data-nome></span><br>
-            <strong>Valor:</strong> ${formatarPreco(result.preco)}</p>
-            <p class="msg">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
-            <a class="btn" href="${url}" target="_blank" rel="noopener">Abrir WhatsApp</a>
+            <p class="form-message"><strong>Serviço:</strong> ${selectedService.value}<br>
+            <strong>Barbeiro:</strong> ${selectedBarber.value}<br>
+            <strong>Dia:</strong> ${appointmentDateFormatted}<br>
+            <strong>Turno:</strong> ${shiftDescription}<br>
+            <strong>Nome:</strong> <span data-customer-name></span><br>
+            <strong>Valor:</strong> ${formatPrice(bookingResult.preco)}</p>
+            <p class="form-message">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
+            <a class="primary-button" href="${whatsappUrl}" target="_blank" rel="noopener">Abrir WhatsApp</a>
         `;
-    ok.querySelector("[data-nome]").textContent = n;
+    confirmation.querySelector("[data-customer-name]").textContent = customerName;
 
-    consultaVagas++;
-    $("f").reset();
-    $("sl").innerHTML = "";
-    $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
-    $("dm").textContent = "";
+    slotRequestVersion++;
+    getById("booking-form").reset();
+    bookingTimeOptions.replaceChildren();
+    getById("booking-time-message").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+    getById("booking-date-message").textContent = "";
 
     // Abre o WhatsApp após confirmar no banco
-    window.open(url, "_blank", "noopener");
+    window.open(whatsappUrl, "_blank", "noopener");
 
-  } catch (ex) {
-    console.error("Erro ao salvar agendamento:", ex);
-    err.textContent = `Não foi possível confirmar a reserva. ${ex.message} Se a conexão caiu durante o envio, confirme com a barbearia antes de repetir o pedido.`;
+  } catch (error) {
+    console.error("Erro ao salvar agendamento:", error);
+    errorMessage.textContent = `Não foi possível confirmar a reserva. ${error.message} Se a conexão caiu durante o envio, confirme com a barbearia antes de repetir o pedido.`;
   } finally {
-    enviar.disabled = false;
-    enviar.textContent = "Enviar pedido de agendamento";
+    submitButton.disabled = false;
+    submitButton.textContent = "Enviar pedido de agendamento";
   }
 });
 
@@ -415,100 +420,100 @@ $("f").addEventListener("submit", async e => {
 /* ===== Vídeo de abertura: trava a rolagem, congela no último frame e desce sozinho ===== */
 
 (() => {
-  const root = document.documentElement,
-    hero = document.querySelector(".hero"),
-    v = document.getElementById("v"),
-    prog = document.getElementById("prog"),
-    skip = document.getElementById("skip"),
-    start = document.getElementById("start");
+  const documentRoot = document.documentElement,
+    introSection = document.querySelector(".intro-section"),
+    introVideo = document.getElementById("intro-video"),
+    videoProgressBar = document.getElementById("intro-video-progress"),
+    skipVideoButton = document.getElementById("intro-skip-button"),
+    startVideoButton = document.getElementById("intro-start-button");
 
-  let finished = false;
-  let startTimer;
+  let hasFinished = false;
+  let startButtonTimer;
 
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
   scrollTo(0, 0);
-  root.classList.add("locked");
+  documentRoot.classList.add("is-scroll-locked");
 
-  const locked = () => root.classList.contains("locked");
+  const isScrollLocked = () => documentRoot.classList.contains("is-scroll-locked");
 
-  ["wheel", "touchmove"].forEach(n =>
+  ["wheel", "touchmove"].forEach(eventName =>
     addEventListener(
-      n,
-      e => {
-        if (locked()) e.preventDefault();
+      eventName,
+      event => {
+        if (isScrollLocked()) event.preventDefault();
       },
       { passive: false }
     )
   );
 
-  addEventListener("keydown", e => {
+  addEventListener("keydown", event => {
     if (
-      locked() &&
-      [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home"].includes(e.key)
-    ) e.preventDefault();
+      isScrollLocked() &&
+      [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home"].includes(event.key)
+    ) event.preventDefault();
   });
 
-  function finish() {
-    if (finished) return;
+  function finishIntroVideo() {
+    if (hasFinished) return;
 
-    finished = true;
-    clearTimeout(startTimer);
+    hasFinished = true;
+    clearTimeout(startButtonTimer);
 
-    hero.classList.add("done");
-    prog.style.transform = "scaleX(1)";
+    introSection.classList.add("is-complete");
+    videoProgressBar.style.transform = "scaleX(1)";
 
     try {
-      v.pause();
+      introVideo.pause();
     } catch (e) { }
 
     // Libera a rolagem imediatamente; a animação do copy é controlada separadamente
-    root.classList.remove("locked");
+    documentRoot.classList.remove("is-scroll-locked");
 
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    document.getElementById("cortes").scrollIntoView({
-      behavior: reduce ? "auto" : "smooth"
+    document.getElementById("cuts").scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth"
     });
   }
 
-  v.addEventListener("timeupdate", () => {
-    if (v.duration && !finished) {
-      prog.style.transform = "scaleX(" + (v.currentTime / v.duration) + ")";
+  introVideo.addEventListener("timeupdate", () => {
+    if (introVideo.duration && !hasFinished) {
+      videoProgressBar.style.transform = "scaleX(" + (introVideo.currentTime / introVideo.duration) + ")";
     }
   });
 
-  v.addEventListener("ended", finish);
+  introVideo.addEventListener("ended", finishIntroVideo);
 
-  v.addEventListener("playing", () => {
-    clearTimeout(startTimer);
-    start.hidden = true;
+  introVideo.addEventListener("playing", () => {
+    clearTimeout(startButtonTimer);
+    startVideoButton.hidden = true;
   });
 
-  v.addEventListener("error", () => {
-    clearTimeout(startTimer);
-    finished = true;
-    root.classList.remove("locked");
-    hero.classList.add("done");
+  introVideo.addEventListener("error", () => {
+    clearTimeout(startButtonTimer);
+    hasFinished = true;
+    documentRoot.classList.remove("is-scroll-locked");
+    introSection.classList.add("is-complete");
   });
 
-  skip.addEventListener("click", () => {
-    if (v.duration) v.currentTime = Math.max(0, v.duration - .05);
-    finish();
+  skipVideoButton.addEventListener("click", () => {
+    if (introVideo.duration) introVideo.currentTime = Math.max(0, introVideo.duration - .05);
+    finishIntroVideo();
   });
 
-  start.addEventListener("click", () => {
-    v.play().catch(() => {
-      if (!finished) start.hidden = false;
+  startVideoButton.addEventListener("click", () => {
+    introVideo.play().catch(() => {
+      if (!hasFinished) startVideoButton.hidden = false;
     });
   });
 
-  startTimer = setTimeout(() => {
-    if (!finished) start.hidden = false;
+  startButtonTimer = setTimeout(() => {
+    if (!hasFinished) startVideoButton.hidden = false;
   }, 1200);
 
-  v.play().catch(() => {
-    if (!finished) start.hidden = false;
+  introVideo.play().catch(() => {
+    if (!hasFinished) startVideoButton.hidden = false;
   });
 })();
 
@@ -516,7 +521,7 @@ $("f").addEventListener("submit", async e => {
 /* ===== Cortes: arrastar para os lados controla o tempo do vídeo ===== */
 
 (() => {
-  const CUTS = [
+  const CUT_NAMES = [
     "Afro com fade",
     "Degradê preciso",
     "Crop com fade",
@@ -527,214 +532,224 @@ $("f").addEventListener("submit", async e => {
     "Topete com risca"
   ];
 
-  const $ = id => document.getElementById(id),
-    st = $("scrub"),
-    v = $("cv"),
-    bar = $("bar"),
-    hint = $("hint"),
-    cn = $("cn"),
-    th = $("th");
+  const videoScrubber = getById("cuts-video-scrubber"),
+    cutVideo = getById("cuts-video"),
+    progressBar = getById("cuts-video-progress"),
+    interactionHint = getById("cuts-video-hint"),
+    currentCutLabel = getById("current-cut-name"),
+    cutThumbnails = getById("cuts-thumbnails");
 
-  let cur = 0,
-    target = 0,
-    pos = 0,
-    vel = 0,
-    drag = false,
-    lastX = 0,
-    lastT = 0,
-    touched = false;
+  let currentCutIndex = 0,
+    targetProgress = 0,
+    currentProgress = 0,
+    dragVelocity = 0,
+    isDragging = false,
+    previousPointerX = 0,
+    previousInteractionTime = 0,
+    hasInteracted = false;
 
-  const clamp = x => Math.min(1, Math.max(0, x));
+  const clampProgress = x => Math.min(1, Math.max(0, x));
 
-  CUTS.forEach((n, i) =>
-    th.insertAdjacentHTML(
+  CUT_NAMES.forEach((cutName, cutIndex) =>
+    cutThumbnails.insertAdjacentHTML(
       "beforeend",
-      `<button type="button" aria-label="${n}"><img src="img/cortes/corte-${i + 1}.jpg" alt="" loading="lazy"></button>`
+      `<button type="button" aria-label="${cutName}"><img src="img/cortes/corte-${cutIndex + 1}.jpg" alt="" loading="lazy"></button>`
     )
   );
 
-  function load(i) {
-    cur = (i + CUTS.length) % CUTS.length;
-    target = pos = vel = 0;
+  function loadCut(cutIndex) {
+    currentCutIndex = (cutIndex + CUT_NAMES.length) % CUT_NAMES.length;
+    targetProgress = currentProgress = dragVelocity = 0;
 
-    v.poster = `img/cortes/corte-${cur + 1}-poster.jpg`;
-    v.src = `video/cortes/corte-${cur + 1}.mp4`;
+    cutVideo.poster = `img/cortes/corte-${currentCutIndex + 1}-poster.jpg`;
+    cutVideo.src = `video/cortes/corte-${currentCutIndex + 1}.mp4`;
 
-    cn.textContent = CUTS[cur];
+    currentCutLabel.textContent = CUT_NAMES[currentCutIndex];
 
-    [...th.children].forEach((b, k) =>
-      b.setAttribute("aria-current", k === cur)
+    [...cutThumbnails.children].forEach((thumbnailButton, thumbnailIndex) =>
+      thumbnailButton.setAttribute("aria-current", thumbnailIndex === currentCutIndex)
     );
 
-    const b = th.children[cur];
+    const activeThumbnail = cutThumbnails.children[currentCutIndex];
 
-    th.scrollTo({
-      left: b.offsetLeft - (th.clientWidth - b.offsetWidth) / 2,
+    cutThumbnails.scrollTo({
+      left: activeThumbnail.offsetLeft - (cutThumbnails.clientWidth - activeThumbnail.offsetWidth) / 2,
       behavior: "smooth"
     });
   }
 
-  function tick() {
-    if (!drag && Math.abs(vel) > .0002) {
-      target = clamp(target + vel);
-      vel *= .96;
-      if (target <= 0 || target >= 1) vel = 0;
+  function updateVideoFrame() {
+    if (!isDragging && Math.abs(dragVelocity) > .0002) {
+      targetProgress = clampProgress(targetProgress + dragVelocity);
+      dragVelocity *= .96;
+      if (targetProgress <= 0 || targetProgress >= 1) dragVelocity = 0;
     }
 
     // A interpolação dita a suavidade, mas agora roda na velocidade do monitor (60hz, 120hz...)
-    pos += (target - pos) * .15;
+    currentProgress += (targetProgress - currentProgress) * .15;
 
-    if (Math.abs(target - pos) < .0001) pos = target;
+    if (Math.abs(targetProgress - currentProgress) < .0001) currentProgress = targetProgress;
 
-    const t = pos * (v.duration || 0);
+    const videoTime = currentProgress * (cutVideo.duration || 0);
 
     // Atualiza o frame o mais rápido que o navegador permitir
-    if (v.readyState >= 2 && !v.seeking && Math.abs(v.currentTime - t) > .01) {
-      v.currentTime = t;
+    if (cutVideo.readyState >= 2 && !cutVideo.seeking && Math.abs(cutVideo.currentTime - videoTime) > .01) {
+      cutVideo.currentTime = videoTime;
     }
 
-    bar.style.transform = `scaleX(${pos})`;
-    st.setAttribute("aria-valuenow", Math.round(pos * 100));
+    progressBar.style.transform = `scaleX(${currentProgress})`;
+    videoScrubber.setAttribute("aria-valuenow", Math.round(currentProgress * 100));
 
-    requestAnimationFrame(tick);
+    requestAnimationFrame(updateVideoFrame);
   }
 
-  st.addEventListener("pointerdown", e => {
+  videoScrubber.addEventListener("pointerdown", e => {
     if (e.pointerType === "mouse" && e.button) return;
 
-    drag = true;
-    vel = 0;
-    lastX = e.clientX;
-    lastT = performance.now();
+    isDragging = true;
+    dragVelocity = 0;
+    previousPointerX = e.clientX;
+    previousInteractionTime = performance.now();
 
-    st.setPointerCapture(e.pointerId);
-    st.classList.add("on");
+    videoScrubber.setPointerCapture(e.pointerId);
+    videoScrubber.classList.add("is-active");
 
-    if (!touched) {
-      touched = true;
-      hint.classList.add("off");
+    if (!hasInteracted) {
+      hasInteracted = true;
+      interactionHint.classList.add("off");
 
-      v.play().then(() => v.pause()).catch(() => { });
+      cutVideo.play().then(() => cutVideo.pause()).catch(() => { });
     }
   });
 
-  st.addEventListener("pointermove", e => {
-    if (!drag) return;
+  videoScrubber.addEventListener("pointermove", pointerEvent => {
+    if (!isDragging) return;
 
     // ALTERAÇÃO 3: Aumentei o divisor de .85 para 1.4.
     // Isso deixa o arrasto menos sensível, exigindo um movimento maior para girar o vídeo.
-    const f = (e.clientX - lastX) / (st.clientWidth * 1.4),
-      n = performance.now();
+    const progressDelta = (pointerEvent.clientX - previousPointerX) / (videoScrubber.clientWidth * 1.4),
+      currentTime = performance.now();
 
-    lastX = e.clientX;
-    target = clamp(target + f);
+    previousPointerX = pointerEvent.clientX;
+    targetProgress = clampProgress(targetProgress + progressDelta);
 
     // Ajuste da velocidade para a inércia
-    vel = .8 * vel + .2 * (f / Math.max(1, n - lastT) * 16);
-    lastT = n;
+    dragVelocity = .8 * dragVelocity + .2 * (progressDelta / Math.max(1, currentTime - previousInteractionTime) * 16);
+    previousInteractionTime = currentTime;
   });
 
-  const end = () => {
-    if (!drag) return;
+  const endPointerDrag = () => {
+    if (!isDragging) return;
 
-    drag = false;
-    st.classList.remove("on");
+    isDragging = false;
+    videoScrubber.classList.remove("is-active");
 
-    if (performance.now() - lastT > 80) vel = 0;
+    if (performance.now() - previousInteractionTime > 80) dragVelocity = 0;
   };
 
-  ["pointerup", "pointercancel", "lostpointercapture"].forEach(n =>
-    st.addEventListener(n, end)
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(eventName =>
+    videoScrubber.addEventListener(eventName, endPointerDrag)
   );
 
-  st.addEventListener("wheel", e => {
-    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+  videoScrubber.addEventListener("wheel", wheelEvent => {
+    if (Math.abs(wheelEvent.deltaX) <= Math.abs(wheelEvent.deltaY)) return;
 
-    e.preventDefault();
+    wheelEvent.preventDefault();
 
-    touched = true;
-    hint.classList.add("off");
+    hasInteracted = true;
+    interactionHint.classList.add("off");
 
     // Suavizado também no scroll do mouse
-    target = clamp(target - e.deltaX / (st.clientWidth * 1.8));
+    targetProgress = clampProgress(targetProgress - wheelEvent.deltaX / (videoScrubber.clientWidth * 1.8));
   }, { passive: false });
 
-  st.addEventListener("keydown", e => {
-    const k = {
+  videoScrubber.addEventListener("keydown", keyboardEvent => {
+    const progressStep = {
       ArrowRight: .05,
       ArrowLeft: -.05
-    }[e.key];
+    }[keyboardEvent.key];
 
-    if (k !== undefined) {
-      e.preventDefault();
+    if (progressStep !== undefined) {
+      keyboardEvent.preventDefault();
 
-      touched = true;
-      hint.classList.add("off");
+      hasInteracted = true;
+      interactionHint.classList.add("off");
 
-      target = clamp(target + k);
+      targetProgress = clampProgress(targetProgress + progressStep);
     }
   });
 
-  $("prev").addEventListener("click", () => load(cur - 1));
-  $("next").addEventListener("click", () => load(cur + 1));
+  getById("previous-cut").addEventListener("click", () => loadCut(currentCutIndex - 1));
+  getById("next-cut").addEventListener("click", () => loadCut(currentCutIndex + 1));
 
-  [...th.children].forEach((b, i) =>
-    b.addEventListener("click", () => load(i))
+  [...cutThumbnails.children].forEach((thumbnailButton, cutIndex) =>
+    thumbnailButton.addEventListener("click", () => loadCut(cutIndex))
   );
 
-  function nudge() {
-    if (touched || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  function nudgeScrubber() {
+    if (hasInteracted || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const s = performance.now();
+    const animationStartTime = performance.now();
 
-    (function f(n) {
-      const k = (n - s) / 1600;
+    (function animateNudge(timestamp) {
+      const progress = (timestamp - animationStartTime) / 1600;
 
-      if (touched || drag) return;
-      if (k >= 1) {
-        target = 0;
+      if (hasInteracted || isDragging) return;
+      if (progress >= 1) {
+        targetProgress = 0;
         return;
       }
 
-      target = .22 * Math.sin(Math.PI * k);
-      requestAnimationFrame(f);
-    })(s);
+      targetProgress = .22 * Math.sin(Math.PI * progress);
+      requestAnimationFrame(animateNudge);
+    })(animationStartTime);
   }
 
-  load(0);
-  tick();
+  loadCut(0);
+  updateVideoFrame();
 
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver((en, o) => {
-      if (en[0].isIntersecting) {
-        v.preload = "auto";
-        v.load();
-        o.disconnect();
+    new IntersectionObserver((entries, observer) => {
+      if (entries[0].isIntersecting) {
+        cutVideo.preload = "auto";
+        cutVideo.load();
+        observer.disconnect();
       }
-    }, { rootMargin: "700px" }).observe(st);
+    }, { rootMargin: "700px" }).observe(videoScrubber);
 
-    new IntersectionObserver((en, o) => {
-      if (en[0].isIntersecting) {
-        o.disconnect();
+    new IntersectionObserver((entries, observer) => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect();
 
-        v.readyState >= 2
-          ? nudge()
-          : v.addEventListener("loadeddata", nudge, { once: true });
+        cutVideo.readyState >= 2
+          ? nudgeScrubber()
+          : cutVideo.addEventListener("loadeddata", nudgeScrubber, { once: true });
       }
-    }, { threshold: .6 }).observe(st);
+    }, { threshold: .6 }).observe(videoScrubber);
 
   } else {
-    v.preload = "auto";
-    v.load();
+    cutVideo.preload = "auto";
+    cutVideo.load();
   }
 })();
 
 /* ===== Menu fixo: link da seção atual ===== */
 (() => {
-  const links = [...document.querySelectorAll(".links a")];
+  const navigationLinks = [...document.querySelectorAll(".section-navigation a")];
   if ("IntersectionObserver" in window) {
-    const so = new IntersectionObserver(en => en.forEach(x => { if (x.isIntersecting) links.forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + x.target.id)) }), { rootMargin: "-45% 0px -50% 0px" });
-    links.forEach(a => { const s = document.querySelector(a.getAttribute("href")); if (s) so.observe(s) });
+    const sectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      navigationLinks.forEach(link => {
+        const isCurrentSection = link.getAttribute("href") === `#${entry.target.id}`;
+        link.setAttribute("aria-current", isCurrentSection);
+      });
+    }), { rootMargin: "-45% 0px -50% 0px" });
+
+    navigationLinks.forEach(link => {
+      const targetSection = document.querySelector(link.getAttribute("href"));
+      if (targetSection) sectionObserver.observe(targetSection);
+    });
   }
 })();
 
@@ -743,115 +758,182 @@ $("f").addEventListener("submit", async e => {
    Safari e iPhone não leem transparência em WebM; lá usamos video/croc.mp4, que guarda a cor (metade de cima)
    e a transparência (metade de baixo), e juntamos as duas num canvas. */
 (() => {
-  const stage = document.getElementById("croc"), cv = document.getElementById("crocc"), mp4 = document.getElementById("crocv"), wm = document.getElementById("crocw");
-  if (!stage || !cv || !mp4) return;
-  const M = { w: 782, h: 600, fx0: 245, fx1: 713 };            // tamanho do recorte e onde o jacaré para (em px do vídeo)
-  const ua = navigator.userAgent;
-  const noAlpha = /iP(hone|ad|od)/.test(ua) || (/^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(ua));
-  const useWebm = !!wm && !noAlpha && !!wm.canPlayType && wm.canPlayType('video/webm; codecs="vp9"') !== "";
-  const vid = useWebm ? wm : mp4;
-  if (!useWebm && wm) wm.remove();
-  cv.width = M.w; cv.height = M.h;
-  const ctx = cv.getContext("2d");
-  const off = document.createElement("canvas"); off.width = M.w; off.height = M.h * 2;
-  const octx = off.getContext("2d", { willReadFrequently: true });
-  const out = ctx.createImageData(M.w, M.h);
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let started = false;
-  if (useWebm) cv.style.display = "none";
+  const animationContainer = document.getElementById("alligator-animation"), frameCanvas = document.getElementById("alligator-frame-canvas"), fallbackVideo = document.getElementById("alligator-mp4-video"), transparentVideo = document.getElementById("alligator-webm-video");
+  if (!animationContainer || !frameCanvas || !fallbackVideo) return;
+  const videoFrameDimensions = { width: 782, height: 600, visibleStartX: 245, visibleEndX: 713 };            // tamanho do recorte e onde o jacaré para (em px do vídeo)
+  const userAgent = navigator.userAgent;
+  const requiresOpaqueVideo = /iP(hone|ad|od)/.test(userAgent) || (/^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(userAgent));
+  const supportsTransparentWebm = !!transparentVideo && !requiresOpaqueVideo && !!transparentVideo.canPlayType && transparentVideo.canPlayType('video/webm; codecs="vp9"') !== "";
+  const activeVideo = supportsTransparentWebm ? transparentVideo : fallbackVideo;
+  if (!supportsTransparentWebm && transparentVideo) transparentVideo.remove();
+  frameCanvas.width = videoFrameDimensions.width; frameCanvas.height = videoFrameDimensions.height;
+  const frameContext = frameCanvas.getContext("2d");
+  const offscreenCanvas = document.createElement("canvas"); offscreenCanvas.width = videoFrameDimensions.width; offscreenCanvas.height = videoFrameDimensions.height * 2;
+  const offscreenContext = offscreenCanvas.getContext("2d", { willReadFrequently: true });
+  const frameImageData = frameContext.createImageData(videoFrameDimensions.width, videoFrameDimensions.height);
+  const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let hasStarted = false;
+  if (supportsTransparentWebm) frameCanvas.style.display = "none";
 
   /* posiciona o jacaré: começa colado na borda esquerda da tela (ele "entra" por ali) e para na coluna do título */
-  function layout() {
-    const sh = stage.clientHeight, s = sh / M.h, r = stage.getBoundingClientRect();
-    const crocW = (M.fx1 - M.fx0) * s, fx0 = M.fx0 * s;
-    const want = r.left + (stage.clientWidth - crocW) / 2;     // onde queremos o jacaré parado (x na tela)
-    const left = Math.min(0, want - fx0);                   // o vídeo nunca começa depois da borda da tela
-    for (const el of [cv, useWebm ? wm : null]) { if (!el) continue; el.style.width = M.w * s + "px"; el.style.height = sh + "px"; el.style.left = (left - r.left) + "px" }
-    stage.style.setProperty("--gx", (left - r.left + fx0 + crocW / 2) + "px");
-    stage.style.setProperty("--gw", crocW * 1.05 + "px");
-  }
-  layout(); addEventListener("resize", layout); addEventListener("load", layout);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  function positionAnimation() {
+    const containerHeight = animationContainer.clientHeight;
+    const scaleFactor = containerHeight / videoFrameDimensions.height;
+    const containerBounds = animationContainer.getBoundingClientRect();
+    const visibleCrocodileWidth =
+      (videoFrameDimensions.visibleEndX - videoFrameDimensions.visibleStartX) * scaleFactor;
+    const visibleStartOffset = videoFrameDimensions.visibleStartX * scaleFactor;
+    const desiredLeftPosition =
+      containerBounds.left + (animationContainer.clientWidth - visibleCrocodileWidth) / 2;
+    const animationLeft = Math.min(0, desiredLeftPosition - visibleStartOffset);
 
-  function arrive() { stage.classList.add("arrived") }
-  function still() {                                    // sem animação: mostra só o jacaré já parado
-    const im = new Image();
-    im.onload = () => { if (wm) wm.style.display = "none"; cv.style.display = ""; ctx.clearRect(0, 0, M.w, M.h); ctx.drawImage(im, 0, 0, M.w, M.h); arrive() };
-    im.src = "img/croc-final.webp";
+    for (const mediaElement of [frameCanvas, supportsTransparentWebm ? transparentVideo : null]) {
+      if (!mediaElement) continue;
+
+      mediaElement.style.width = videoFrameDimensions.width * scaleFactor + "px";
+      mediaElement.style.height = containerHeight + "px";
+      mediaElement.style.left = animationLeft - containerBounds.left + "px";
+    }
+
+    animationContainer.style.setProperty(
+      "--alligator-position-x",
+      animationLeft - containerBounds.left + visibleStartOffset + visibleCrocodileWidth / 2 + "px"
+    );
+    animationContainer.style.setProperty("--alligator-shadow-width", visibleCrocodileWidth * 1.05 + "px");
   }
-  function draw() {
-    octx.drawImage(vid, 0, 0, M.w, M.h * 2);
-    const d = octx.getImageData(0, 0, M.w, M.h * 2).data, o = out.data, n = M.w * M.h * 4;
-    for (let i = 0; i < n; i += 4) { o[i] = d[i]; o[i + 1] = d[i + 1]; o[i + 2] = d[i + 2]; o[i + 3] = d[n + i] }
-    ctx.putImageData(out, 0, 0);
+  positionAnimation(); addEventListener("resize", positionAnimation); addEventListener("load", positionAnimation);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(positionAnimation);
+
+  function showFinalPose() { animationContainer.classList.add("arrived") }
+  function renderStaticFallback() {                                    // sem animação: mostra só o jacaré já parado
+    const fallbackImage = new Image();
+    fallbackImage.onload = () => {
+      if (transparentVideo) transparentVideo.style.display = "none";
+      frameCanvas.style.display = "";
+      frameContext.clearRect(0, 0, videoFrameDimensions.width, videoFrameDimensions.height);
+      frameContext.drawImage(fallbackImage, 0, 0, videoFrameDimensions.width, videoFrameDimensions.height);
+      showFinalPose();
+    };
+    fallbackImage.src = "img/croc-final.webp";
   }
-  const next = cb => "requestVideoFrameCallback" in vid ? vid.requestVideoFrameCallback(cb) : requestAnimationFrame(cb);
-  function tick() {
+  function drawVideoFrame() {
+    offscreenContext.drawImage(activeVideo, 0, 0, videoFrameDimensions.width, videoFrameDimensions.height * 2);
+    const sourcePixelData =
+      offscreenContext.getImageData(0, 0, videoFrameDimensions.width, videoFrameDimensions.height * 2).data;
+    const outputPixelData = frameImageData.data;
+    const pixelCount = videoFrameDimensions.width * videoFrameDimensions.height * 4;
+
+    for (let pixelIndex = 0; pixelIndex < pixelCount; pixelIndex += 4) {
+      outputPixelData[pixelIndex] = sourcePixelData[pixelIndex];
+      outputPixelData[pixelIndex + 1] = sourcePixelData[pixelIndex + 1];
+      outputPixelData[pixelIndex + 2] = sourcePixelData[pixelIndex + 2];
+      outputPixelData[pixelIndex + 3] = sourcePixelData[pixelCount + pixelIndex];
+    }
+    frameContext.putImageData(frameImageData, 0, 0);
+  }
+  const scheduleNextFrame = callback =>
+    "requestVideoFrameCallback" in activeVideo
+      ? activeVideo.requestVideoFrameCallback(callback)
+      : requestAnimationFrame(callback);
+  function renderAnimationFrame() {
     try {
-      if (vid.readyState >= 2) draw();
-      if (vid.ended) { draw(); arrive(); return }
-    } catch (e) { still(); return }                           // navegador bloqueou a leitura dos pixels: mostra a pose final
-    next(tick);
+      if (activeVideo.readyState >= 2) drawVideoFrame();
+      if (activeVideo.ended) { drawVideoFrame(); showFinalPose(); return }
+    } catch {
+      renderStaticFallback();
+      return;
+    }
+    scheduleNextFrame(renderAnimationFrame);
   }
-  function go() {
-    if (started) return; started = true;
-    if (reduce) { still(); return }
-    vid.preload = "auto";
-    vid.addEventListener("ended", () => { if (!useWebm) { try { draw() } catch (e) { still(); return } } arrive() }, { once: true });
-    vid.addEventListener("error", still, { once: true });
-    const p = vid.play();
-    if (useWebm) { if (p && p.catch) p.catch(still); return }   // se o navegador bloquear o autoplay, mostra a pose final
-    if (p && p.then) p.then(() => next(tick), still); else next(tick);
+  function startAnimation() {
+    if (hasStarted) return; hasStarted = true;
+    if (prefersReducedMotion) { renderStaticFallback(); return }
+    activeVideo.preload = "auto";
+    activeVideo.addEventListener("ended", () => { if (!supportsTransparentWebm) { try { drawVideoFrame() } catch (e) { renderStaticFallback(); return } } showFinalPose() }, { once: true });
+    activeVideo.addEventListener("error", renderStaticFallback, { once: true });
+    const playPromise = activeVideo.play();
+    if (supportsTransparentWebm) {
+      if (playPromise && playPromise.catch) playPromise.catch(renderStaticFallback);
+      return;
+    }
+    if (playPromise && playPromise.then) {
+      playPromise.then(() => scheduleNextFrame(renderAnimationFrame), renderStaticFallback);
+    } else {
+      scheduleNextFrame(renderAnimationFrame);
+    }
   }
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver((en, o) => { if (en[0].isIntersecting) { vid.preload = "auto"; vid.load(); o.disconnect() } }, { rootMargin: "800px" }).observe(stage);
-    new IntersectionObserver((en, o) => { if (en[0].isIntersecting) { o.disconnect(); go() } }, { threshold: .6 }).observe(stage);
-  } else go();
+    new IntersectionObserver((entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+
+      activeVideo.preload = "auto";
+      activeVideo.load();
+      observer.disconnect();
+    }, { rootMargin: "800px" }).observe(animationContainer);
+    new IntersectionObserver((entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+
+      observer.disconnect();
+      startAnimation();
+    }, { threshold: .6 }).observe(animationContainer);
+  } else startAnimation();
 })();
 
 /* ===== Revelar blocos ao rolar ===== */
 (() => {
-  const els = document.querySelectorAll(".reveal,section h2,section .lead");
-  els.forEach(e => e.classList.add("reveal"));
-  if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("in")); return }
-  const io = new IntersectionObserver(en => en.forEach(x => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target) } }), { threshold: .12, rootMargin: "0px 0px -6% 0px" });
-  els.forEach(e => io.observe(e));
+  const revealElements = document.querySelectorAll(".reveal-on-scroll,section h2,section .section-description");
+  revealElements.forEach(element => element.classList.add("reveal-on-scroll"));
+  if (!("IntersectionObserver" in window)) {
+    revealElements.forEach(element => element.classList.add("is-visible"));
+    return;
+  }
+
+  const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    entry.target.classList.add("is-visible");
+    revealObserver.unobserve(entry.target);
+  }), { threshold: .12, rootMargin: "0px 0px -6% 0px" });
+  revealElements.forEach(element => revealObserver.observe(element));
 })();
 
 
 /* ===== Barbeiro selecionado entra em cena (vídeo) ===== */
 (function () {
-  const stage = document.getElementById("stage");
-  if (!stage) return;
-  const norm = s => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const vids = [...stage.querySelectorAll(".barber")];
-  let atual = null;
+  const barberVideoStage = document.getElementById("barber-video-stage");
+  if (!barberVideoStage) return;
+  const normalizeBarberName = barberName =>
+    (barberName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const barberVideos = [...barberVideoStage.querySelectorAll(".barber-video")];
+  let activeBarberVideo = null;
 
-  function mostrar(nome) {
-    const alvo = vids.find(v => norm(v.dataset.b) === norm(nome)) || null;
-    if (alvo === atual) return;
+  function showBarberVideo(barberName) {
+    const nextBarberVideo = barberVideos.find(video =>
+      normalizeBarberName(video.dataset.barber) === normalizeBarberName(barberName)
+    ) || null;
+    if (nextBarberVideo === activeBarberVideo) return;
 
     // quem estava em cena sai suavemente e pausa depois da transição
-    if (atual) {
-      const saindo = atual;
-      saindo.classList.remove("on");
-      setTimeout(() => { if (!saindo.classList.contains("on")) saindo.pause(); }, 1000);
+    if (activeBarberVideo) {
+      const previousBarberVideo = activeBarberVideo;
+      previousBarberVideo.classList.remove("is-active");
+      setTimeout(() => { if (!previousBarberVideo.classList.contains("is-active")) previousBarberVideo.pause(); }, 1000);
     }
 
-    atual = alvo;
-    if (alvo) {
-      alvo.currentTime = 0;
-      const p = alvo.play();
-      if (p && p.catch) p.catch(() => { });
+    activeBarberVideo = nextBarberVideo;
+    if (nextBarberVideo) {
+      nextBarberVideo.currentTime = 0;
+      const playPromise = nextBarberVideo.play();
+      if (playPromise && playPromise.catch) playPromise.catch(() => { });
       // força o navegador a registrar o estado inicial antes de animar a entrada
-      requestAnimationFrame(() => requestAnimationFrame(() => alvo.classList.add("on")));
+      requestAnimationFrame(() => requestAnimationFrame(() => nextBarberVideo.classList.add("is-active")));
     }
   }
 
-  document.getElementById("bar-opts").addEventListener("change", e => {
-    if (e.target.name === "b") mostrar(e.target.value);
+  document.getElementById("booking-barber-options").addEventListener("change", event => {
+    if (event.target.name === "barber") showBarberVideo(event.target.value);
   });
 
   // depois de enviar o formulário (reset), o barbeiro sai de cena
-  document.getElementById("f").addEventListener("reset", () => setTimeout(() => mostrar(null), 0));
+  document.getElementById("booking-form").addEventListener("reset", () => setTimeout(() => showBarberVideo(null), 0));
 })();
