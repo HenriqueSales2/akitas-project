@@ -86,16 +86,10 @@ header {
   inset: 0 0 auto;
   z-index: 20;
   padding: calc(10px + env(safe-area-inset-top, 0px)) 0 10px;
-  border-bottom: 1px solid transparent;
-  transition: background .3s, border-color .3s;
-  background: linear-gradient(rgba(4, 10, 10, .7), transparent)
-}
-
-header.solid {
-  background: rgba(7, 19, 18, .88);
+  border-bottom: 1px solid rgba(47, 240, 220, .25);
+  background: rgba(8, 13, 16, .9);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom-color: var(--line)
+  -webkit-backdrop-filter: blur(14px)
 }
 
 header .wrap {
@@ -631,6 +625,10 @@ html.locked .links {
   border-top: 1px solid var(--line-l)
 }
 
+.services-status {
+  margin: 0 0 12px
+}
+
 .services li {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -857,6 +855,24 @@ footer {
   margin-top: 56px;
   color: var(--mut);
   font-size: 14px
+}
+
+.copyr #creator-credit {
+  display: inline-flex;
+  vertical-align: middle
+}
+
+.copyr .creator-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px
+}
+
+.copyr .creator-credit img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover
 }
 
 @media(prefers-reduced-motion:reduce) {
@@ -1188,11 +1204,6 @@ h2::after {
 .nav-cta {
   background: linear-gradient(180deg, #6af7e8, var(--teal));
   box-shadow: 0 0 18px -4px rgba(47, 240, 220, .7)
-}
-
-header.solid {
-  background: rgba(8, 13, 16, .9);
-  border-bottom-color: rgba(47, 240, 220, .25)
 }
 
 .hero::after {

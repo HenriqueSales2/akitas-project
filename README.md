@@ -9,9 +9,9 @@ Arquivos:
   video/cortes/     os 8 videos da secao "Nossos cortes" (corte-1.mp4 ... corte-8.mp4)
   img/cortes/       miniatura (corte-N.jpg) e poster (corte-N-poster.jpg) de cada corte
 
-Para editar (em script.js): numero do WhatsApp na constante WA (formato 5511999999999).
-Mantenha esse numero consistente com o contato exibido no rodape do index.html.
-No index.html: precos, endereco, horario e Instagram.
+No `index.html`: endereco, horario, Instagram e contato geral da barbearia. Nome, descricao e
+preco dos servicos ficam em `config_agendamentos()` no Supabase e aparecem automaticamente
+nos cards e no formulario.
 
 ## Agendamento: GitHub Pages + Supabase
 
@@ -25,7 +25,10 @@ O navegador chama a Data API do Supabase diretamente com `fetch`.
 2. Abra **SQL Editor > New query**, cole o conteudo completo de
    [supabase/schema.sql](supabase/schema.sql) e clique em **Run**.
    O script cria a tabela e as funcoes, ativa RLS e concede acesso somente as funcoes publicas.
-   Pode ser executado novamente para atualizar as funcoes sem apagar os agendamentos.
+   Tambem converte a coluna `preco` existente para `numeric(10,2)`, preservando os valores e
+   agendamentos anteriores.
+   Pode ser executado novamente para atualizar as funcoes sem apagar os agendamentos; nao
+   execute nenhum `DELETE`, `DROP` ou rollback manual antes.
 3. Confira a URL e a chave **publishable** em [supabase-config.js](supabase-config.js).
    Esses dois valores sao publicos. Nunca coloque senha, chave `sb_secret_...` ou
    `service_role` no site, nos commits ou em mensagens compartilhadas.
@@ -45,7 +48,15 @@ compativeis com GitHub Pages em um subdiretorio.
 
 ### Regras e acesso aos dados
 
-- `config_agendamentos()` fornece servicos/precos, barbeiros, turnos e limite.
+- `config_agendamentos()` fornece servicos (nome, descricao e preco), barbeiros, turnos e limite.
+  Cards e opcoes de agendamento usam a mesma lista; adicionar um servico nessa funcao cria
+  automaticamente o card e a opcao correspondente no formulario. Os nomes dos servicos devem
+  ser unicos.
+  Cada item de `barbeiros` tem `nome` e `tel`; os telefones usam formato internacional apenas
+  com digitos. Precos sao armazenados em `numeric(10,2)`; o site omite centavos para valores
+  inteiros e os exibe quando houver fracao.
+- `config_creditos()` fornece nome, URL e imagem do credito no rodape, independentemente dos
+  dados de agendamento.
 - `vagas_agendamentos(p_data)` retorna apenas contagens, sem nomes ou telefones.
 - `criar_agendamento(...)` valida os dados e determina o preco no banco, nao no navegador.
   Uma trava por data/barbeiro/turno protege o limite de 10 vagas contra reservas simultaneas.
@@ -80,8 +91,13 @@ Jacare na secao "Servicos":
   O tamanho dele muda em .croc no style.css.
 
 Barbeiros, turnos e limite de vagas (na funcao config_agendamentos em supabase/schema.sql):
-  BARBEIROS         lista de barbeiros (Alexandre, Luiz, Matheus)
+  BARBEIROS         objetos com nome e telefone (Alexandre, Luiz, Matheus)
   TURNOS            manha 08:30-12:00, tarde 13:00-18:00, noite 18:00-20:00
   LIMITE_POR_TURNO  maximo de clientes por barbeiro em cada turno (10)
 Para mudar as regras, edite o SQL e execute-o novamente no Supabase.
-Ao mudar precos, atualize tambem os valores exibidos na secao Servicos do index.html.
+Para adicionar ou alterar um servico, edite `nome`, `descricao` e `preco` em `servicos` na
+funcao `config_agendamentos()`; os cards e as opcoes do formulario sao atualizados juntos.
+Para alterar os telefones, edite `barbeiros` em `config_agendamentos()`. Para alterar o link
+ou a imagem do credito, edite `config_creditos()`. Depois de qualquer uma dessas alteracoes,
+execute o `supabase/schema.sql` novamente no Supabase. O formulario valida o nome e telefone
+de cada barbeiro antes de aceitar reservas.

@@ -5,13 +5,33 @@ create table if not exists public.agendamentos (
   nome text not null check (char_length(btrim(nome)) between 2 and 120),
   telefone text not null check (telefone ~ '^[0-9]{10,15}$'),
   servico text not null,
-  preco integer not null check (preco >= 0),
+  preco numeric(10,2) not null check (preco >= 0),
   data date not null,
   horario text not null,
   barbeiro text not null,
   turno text not null,
   created_at timestamptz not null default now()
 );
+
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'agendamentos'
+      and column_name = 'preco'
+      and (
+        data_type <> 'numeric'
+        or numeric_precision is distinct from 10
+        or numeric_scale is distinct from 2
+      )
+  ) then
+    alter table public.agendamentos
+      alter column preco type numeric(10,2)
+      using preco::numeric(10,2);
+  end if;
+end;
+$$;
 
 create index if not exists idx_agendamentos_vagas
   on public.agendamentos (data, barbeiro, turno);
@@ -27,19 +47,36 @@ immutable
 set search_path = ''
 as $$
   select '{
-    "barbeiros": ["Alexandre", "Luiz", "Matheus"],
+    "barbeiros": [
+      {"nome": "Alexandre", "tel": "5511944668769"},
+      {"nome": "Luiz", "tel": "5511977395774"},
+      {"nome": "Matheus", "tel": "5511986961640"}
+    ],
     "turnos": [
       {"id": "manha", "nome": "Manhã", "inicio": "08:30", "fim": "12:00"},
       {"id": "tarde", "nome": "Tarde", "inicio": "13:00", "fim": "18:00"},
       {"id": "noite", "nome": "Noite", "inicio": "18:00", "fim": "20:00"}
     ],
     "servicos": [
-      {"nome": "Corte", "preco": 50},
-      {"nome": "Barba", "preco": 40},
-      {"nome": "Corte + Barba", "preco": 80},
-      {"nome": "Acabamento", "preco": 20}
+      {"nome": "Corte", "descricao": "Máquina ou tesoura, finalizado com navalha · 40 min", "preco": 50},
+      {"nome": "Barba", "descricao": "Toalha quente, navalha e hidratação · 30 min", "preco": 40},
+      {"nome": "Corte + Barba", "descricao": "O combo completo · 1h10", "preco": 80},
+      {"nome": "Acabamento", "descricao": "Pezinho, contorno e sobrancelha · 15 min", "preco": 20}
     ],
     "limite": 10
+  }'::jsonb;
+$$;
+
+create or replace function public.config_creditos()
+returns jsonb
+language sql
+immutable
+set search_path = ''
+as $$
+  select '{
+    "nome": "Akitas",
+    "url": "https://akitas.freedev.app",
+    "imagem": "https://akitas.freedev.app/wp-content/uploads/2026/09/cropped-cropped-akitas-1-48x46.jpeg"
   }'::jsonb;
 $$;
 
@@ -54,6 +91,7 @@ declare
   vagas jsonb := '{}'::jsonb;
   por_turno jsonb;
   nome_barbeiro text;
+  config_barbeiro jsonb;
   config_turno jsonb;
   usados integer;
   hoje date := (now() at time zone 'America/Sao_Paulo')::date;
@@ -62,7 +100,8 @@ begin
     raise exception using errcode = '22023', message = 'Escolha uma data entre hoje e os próximos 60 dias.';
   end if;
 
-  for nome_barbeiro in select jsonb_array_elements_text(config->'barbeiros') loop
+  for config_barbeiro in select jsonb_array_elements(config->'barbeiros') loop
+    nome_barbeiro := config_barbeiro->>'nome';
     por_turno := '{}'::jsonb;
     for config_turno in select jsonb_array_elements(config->'turnos') loop
       select count(*) into usados from public.agendamentos a
@@ -95,7 +134,7 @@ as $$
 declare
   config jsonb := public.config_agendamentos();
   turno jsonb;
-  preco integer;
+  preco numeric(10,2);
   usados integer;
   novo_id bigint;
   telefone text := regexp_replace(p_telefone, '[^0-9]', '', 'g');
@@ -108,7 +147,10 @@ begin
   if p_data is null or p_data < agora::date or p_data > agora::date + 60 then
     raise exception using errcode = '22023', message = 'Escolha uma data entre hoje e os próximos 60 dias.';
   end if;
-  if p_barbeiro is null or not (config->'barbeiros' ? p_barbeiro) then
+  if p_barbeiro is null or not exists (
+    select 1 from jsonb_array_elements(config->'barbeiros') item
+      where item->>'nome' = p_barbeiro
+  ) then
     raise exception using errcode = '22023', message = 'Barbeiro inválido.';
   end if;
   select item into turno from jsonb_array_elements(config->'turnos') item
@@ -116,7 +158,7 @@ begin
   if turno is null then
     raise exception using errcode = '22023', message = 'Turno inválido.';
   end if;
-  select (item->>'preco')::integer into preco
+  select (item->>'preco')::numeric(10,2) into preco
     from jsonb_array_elements(config->'servicos') item where item->>'nome' = p_servico;
   if preco is null then
     raise exception using errcode = '22023', message = 'Serviço inválido.';
@@ -152,10 +194,12 @@ end;
 $$;
 
 revoke all on function public.config_agendamentos() from public, anon, authenticated;
+revoke all on function public.config_creditos() from public, anon, authenticated;
 revoke all on function public.vagas_agendamentos(date) from public, anon, authenticated;
 revoke all on function public.criar_agendamento(text, text, text, date, text, text) from public, anon, authenticated;
 grant usage on schema public to anon, authenticated;
 grant execute on function public.config_agendamentos() to anon, authenticated;
+grant execute on function public.config_creditos() to anon, authenticated;
 grant execute on function public.vagas_agendamentos(date) to anon, authenticated;
 grant execute on function public.criar_agendamento(text, text, text, date, text, text) to anon, authenticated;
 

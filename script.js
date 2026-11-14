@@ -1,18 +1,30 @@
 /* ===== Agendamento ===== */
 
-const WA = "5511977395774";
-
 let CONFIG;
 let consultaVagas = 0;
 
 const $ = id => document.getElementById(id);
 
 const svc = $("svc"),
+  serviceList = $("service-list"),
   sl = $("sl"),
   d = $("d"),
   barOpts = $("bar-opts");
 
 const enviar = $("f").querySelector("button[type=submit]");
+
+function formatarPreco(preco) {
+  if (typeof preco !== "number" || !Number.isFinite(preco) || preco < 0) {
+    throw new Error("Preço de serviço inválido.");
+  }
+  const temCentavos = !Number.isInteger(preco);
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: temCentavos ? 2 : 0,
+    maximumFractionDigits: 2
+  }).format(preco);
+}
 
 const relogio = new Intl.DateTimeFormat("en-GB", {
   timeZone: "America/Sao_Paulo",
@@ -62,29 +74,151 @@ const hhmm = t => {
 };
 
 function renderBarbeiros() {
-  barOpts.innerHTML = "";
-  CONFIG.barbeiros.forEach(n =>
-    barOpts.insertAdjacentHTML(
-      "beforeend",
-      `<label class="opt"><input type="radio" name="b" value="${n}"><span>${n}</span></label>`
-    )
-  );
+  barOpts.replaceChildren();
+  CONFIG.barbeiros.forEach(({ nome }) => {
+    const option = document.createElement("label");
+    option.className = "opt";
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "b";
+    input.value = nome;
+
+    const label = document.createElement("span");
+    label.textContent = nome;
+    option.append(input, label);
+    barOpts.append(option);
+  });
+}
+
+function renderServicos(servicos) {
+  const opcoes = document.createDocumentFragment();
+  const cards = document.createDocumentFragment();
+
+  servicos.forEach(({ nome, descricao, preco }) => {
+    const precoFormatado = formatarPreco(preco);
+
+    const opcao = document.createElement("label");
+    opcao.className = "opt";
+
+    const entrada = document.createElement("input");
+    entrada.type = "radio";
+    entrada.name = "s";
+    entrada.value = nome;
+
+    const rotulo = document.createElement("span");
+    rotulo.append(document.createTextNode(nome));
+
+    const precoOpcao = document.createElement("b");
+    precoOpcao.textContent = precoFormatado;
+    rotulo.append(precoOpcao);
+    opcao.append(entrada, rotulo);
+    opcoes.append(opcao);
+
+    const cartao = document.createElement("li");
+    const detalhes = document.createElement("div");
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = nome;
+
+    const texto = document.createElement("small");
+    texto.textContent = descricao;
+    detalhes.append(titulo, texto);
+
+    const precoCartao = document.createElement("span");
+    precoCartao.className = "price";
+    precoCartao.textContent = precoFormatado;
+
+    const agendar = document.createElement("button");
+    agendar.type = "button";
+    agendar.className = "mini";
+    agendar.dataset.s = nome;
+    agendar.textContent = "Agendar";
+
+    cartao.append(detalhes, precoCartao, agendar);
+    cards.append(cartao);
+  });
+
+  svc.replaceChildren(opcoes);
+  serviceList.replaceChildren(cards);
+  $("services-status").hidden = true;
+}
+
+function renderCreditos(creditos) {
+  const urlValida = value => {
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+  if (
+    !creditos ||
+    typeof creditos.nome !== "string" ||
+    !creditos.nome.trim() ||
+    !urlValida(creditos.url) ||
+    !urlValida(creditos.imagem)
+  ) {
+    console.error("Configure nome, link e imagem válidos para os créditos no Supabase.");
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.className = "creator-credit";
+  link.href = creditos.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+
+  const imagem = document.createElement("img");
+  imagem.src = creditos.imagem;
+  imagem.alt = "";
+  imagem.width = 20;
+  imagem.height = 20;
+
+  const nome = document.createElement("span");
+  nome.textContent = creditos.nome;
+  link.append(imagem, nome);
+  $("creator-credit").replaceChildren(link);
 }
 
 async function carregarConfig() {
   try {
     CONFIG = await supabaseRPC("config_agendamentos");
-    CONFIG.servicos.forEach(({ nome, preco }) => {
-      svc.insertAdjacentHTML(
-        "beforeend",
-        `<label class="opt"><input type="radio" name="s" value="${nome}"><span>${nome}<b>R$ ${preco}</b></span></label>`
-      );
-    });
+    const servicosValidos = Array.isArray(CONFIG.servicos) &&
+      CONFIG.servicos.length > 0 &&
+      CONFIG.servicos.every(servico =>
+        typeof servico?.nome === "string" &&
+        servico.nome.trim() &&
+        typeof servico.descricao === "string" &&
+        servico.descricao.trim() &&
+        typeof servico.preco === "number" &&
+        Number.isFinite(servico.preco) &&
+        servico.preco >= 0
+      ) &&
+      new Set(CONFIG.servicos.map(({ nome }) => nome)).size === CONFIG.servicos.length;
+    if (!servicosValidos) {
+      throw new Error("Configure nomes únicos, descrição e preço válidos para cada serviço no Supabase.");
+    }
+
+    const contatosValidos = Array.isArray(CONFIG.barbeiros) &&
+      CONFIG.barbeiros.length > 0 &&
+      CONFIG.barbeiros.every(({ nome, tel }) =>
+        typeof nome === "string" &&
+        nome.trim() &&
+        typeof tel === "string" &&
+        /^\d{10,15}$/.test(tel)
+    );
+    if (!contatosValidos) {
+      throw new Error("Configure nome e telefone válidos para cada barbeiro no Supabase.");
+    }
+
+    renderServicos(CONFIG.servicos);
     renderBarbeiros();
     enviar.disabled = false;
     enviar.textContent = "Enviar pedido de agendamento";
   } catch (err) {
     console.error("Erro ao carregar configuração:", err);
+    $("services-status").textContent = "Não foi possível carregar os serviços. Tente novamente mais tarde.";
     $("e").textContent = "Agendamento indisponível. Recarregue a página para tentar novamente ou entre em contato com a barbearia.";
     enviar.disabled = true;
     enviar.textContent = "Agendamento indisponível";
@@ -92,6 +226,17 @@ async function carregarConfig() {
 }
 
 carregarConfig();
+
+async function carregarCreditos() {
+  try {
+    const creditos = await supabaseRPC("config_creditos");
+    renderCreditos(creditos);
+  } catch (err) {
+    console.error("Erro ao carregar os créditos do rodapé:", err);
+  }
+}
+
+carregarCreditos();
 
 // Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam
 async function slots() {
@@ -169,16 +314,16 @@ async function slots() {
 d.addEventListener("change", slots);
 barOpts.addEventListener("change", slots);
 
-document.querySelectorAll(".mini").forEach(b =>
-  b.addEventListener("click", () => {
-    const servico = document.querySelector(
-      `input[name=s][value="${b.dataset.s}"]`
-    );
-    if (servico) servico.checked = true;
+serviceList.addEventListener("click", event => {
+  const botao = event.target.closest("button.mini");
+  if (!botao) return;
 
-    $("agendar").scrollIntoView({ behavior: "smooth" });
-  })
-);
+  const servico = [...svc.querySelectorAll('input[name="s"]')]
+    .find(entrada => entrada.value === botao.dataset.s);
+  if (servico) servico.checked = true;
+
+  $("agendar").scrollIntoView({ behavior: "smooth" });
+});
 
 $("f").addEventListener("submit", async e => {
   e.preventDefault();
@@ -198,6 +343,8 @@ $("f").addEventListener("submit", async e => {
   if (enviar.disabled) return;
   if (!s) return err.textContent = "Escolha um serviço.";
   if (!b) return err.textContent = "Escolha o barbeiro.";
+  const barbeiroConfig = CONFIG.barbeiros.find(({ nome }) => nome === b.value);
+  if (!barbeiroConfig) return err.textContent = "Selecione um barbeiro válido.";
   if (!d.value) return err.textContent = "Escolha o dia do atendimento.";
   if (!h) return err.textContent = "Escolha um turno.";
   if (n.length < 2) return err.textContent = "Informe seu nome.";
@@ -230,7 +377,7 @@ $("f").addEventListener("submit", async e => {
 
     const txt = `Olá, Os Malas! Reservei ${s.value} com ${b.value}, dia ${dataBR}, turno ${turnoTxt}. Nome: ${n}. Telefone: ${t}.`;
 
-    const url = `https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
+    const url = `https://wa.me/${barbeiroConfig.tel}?text=${encodeURIComponent(txt)}`;
 
     ok.hidden = false;
     ok.innerHTML = `
@@ -240,7 +387,7 @@ $("f").addEventListener("submit", async e => {
             <strong>Dia:</strong> ${dataBR}<br>
             <strong>Turno:</strong> ${turnoTxt}<br>
             <strong>Nome:</strong> <span data-nome></span><br>
-            <strong>Valor:</strong> R$ ${result.preco}</p>
+            <strong>Valor:</strong> ${formatarPreco(result.preco)}</p>
             <p class="msg">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
             <a class="btn" href="${url}" target="_blank" rel="noopener">Abrir WhatsApp</a>
         `;
@@ -276,6 +423,7 @@ $("f").addEventListener("submit", async e => {
     start = document.getElementById("start");
 
   let finished = false;
+  let startTimer;
 
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
@@ -305,6 +453,7 @@ $("f").addEventListener("submit", async e => {
     if (finished) return;
 
     finished = true;
+    clearTimeout(startTimer);
 
     hero.classList.add("done");
     prog.style.transform = "scaleX(1)";
@@ -332,10 +481,12 @@ $("f").addEventListener("submit", async e => {
   v.addEventListener("ended", finish);
 
   v.addEventListener("playing", () => {
+    clearTimeout(startTimer);
     start.hidden = true;
   });
 
   v.addEventListener("error", () => {
+    clearTimeout(startTimer);
     finished = true;
     root.classList.remove("locked");
     hero.classList.add("done");
@@ -347,11 +498,17 @@ $("f").addEventListener("submit", async e => {
   });
 
   start.addEventListener("click", () => {
-    v.play();
+    v.play().catch(() => {
+      if (!finished) start.hidden = false;
+    });
   });
 
+  startTimer = setTimeout(() => {
+    if (!finished) start.hidden = false;
+  }, 1200);
+
   v.play().catch(() => {
-    start.hidden = false;
+    if (!finished) start.hidden = false;
   });
 })();
 
@@ -572,10 +729,8 @@ $("f").addEventListener("submit", async e => {
   }
 })();
 
-/* ===== Menu fixo: fundo ao rolar e link da seção atual ===== */
+/* ===== Menu fixo: link da seção atual ===== */
 (() => {
-  const hd = document.querySelector("header");
-  const solid = () => hd.classList.toggle("solid", scrollY > 60); addEventListener("scroll", solid, { passive: true }); solid();
   const links = [...document.querySelectorAll(".links a")];
   if ("IntersectionObserver" in window) {
     const so = new IntersectionObserver(en => en.forEach(x => { if (x.isIntersecting) links.forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + x.target.id)) }), { rootMargin: "-45% 0px -50% 0px" });
