@@ -36,7 +36,7 @@ as $$
     "servicos": [
       {"nome": "Corte", "preco": 50},
       {"nome": "Barba", "preco": 40},
-      {"nome": "Corte + barba", "preco": 80},
+      {"nome": "Corte + Barba", "preco": 80},
       {"nome": "Acabamento", "preco": 20}
     ],
     "limite": 10

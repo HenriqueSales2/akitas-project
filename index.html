@@ -1,106 +1,183 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Os Malas Studio</title>
-<meta name="theme-color" content="#0a1013">
-<link rel="icon" type="image/png" href="img/logo-sm.png">
-<meta name="description" content="Os Malas Studio: corte, barba e acabamento. Escolha o serviço, o dia e o horário e agende pelo site.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Os Malas Studio</title>
+  <meta name="theme-color" content="#0a1013">
+  <link rel="icon" type="image/png" href="img/logo-sm.png">
+  <meta name="description"
+    content="Os Malas Studio: corte, barba e acabamento. Escolha o serviço, o dia e o horário e agende pelo site.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<header><div class="wrap"><a class="logo" href="#" aria-label="Os Malas Studio"><img src="img/malas1.jpg" alt="" width="44" height="44"><span>Os Malas <em>Studio</em></span></a><nav class="links" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a href="#contato">Contato</a></nav><a class="nav-cta" href="#agendar">Agendar</a></div></header>
+  <header>
+    <div class="wrap"><a class="logo" href="#" aria-label="Os Malas Studio"><img src="img/malas1.jpg" alt="" width="44"
+          height="44"><span>Os Malas <em>Studio</em></span></a>
+      <nav class="links" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a
+          href="#contato">Contato</a></nav><a class="nav-cta" href="#agendar">Agendar</a>
+    </div>
+  </header>
 
-<main>
-<div class="hero" id="top">
- <div class="bg" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
- <div class="media"><video id="v" src="video/osmalas.mp4" muted playsinline preload="auto" poster="img/poster.jpg" aria-label="Barbeiro da Os Malas Studio cortando o cabelo de um cliente"></video></div>
- <div class="copy wrap">
-  <span class="eyebrow">Barbearia · São Paulo</span>
-  <h1><span class="w1">Os Malas</span><span class="w2">Studio</span></h1>
-  <p>Corte e barba feitos com calma, num ambiente para você relaxar. Escolha o horário e venha.</p>
-  <div class="btns"><a class="btn" href="#agendar">Agendar meu horário</a><a class="btn ghost" href="#servicos">Ver serviços e preços</a></div>
- </div>
- <button class="start" id="start" type="button" hidden>Toque para começar</button>
- <button class="skip" id="skip" type="button">Pular vídeo</button>
- <div class="prog" id="prog"></div>
-</div>
+  <main>
+    <div class="hero" id="top">
+      <div class="bg" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
+      <div class="media"><video id="v" src="video/osmalas.mp4" muted playsinline preload="auto" poster="img/poster.jpg"
+          aria-label="Barbeiro da Os Malas Studio cortando o cabelo de um cliente"></video></div>
+      <div class="copy wrap">
+        <span class="eyebrow">Barbearia · São Paulo</span>
+        <h1><span class="w1">Os Malas</span><span class="w2">Studio</span></h1>
+        <p>Corte e barba feitos com calma, num ambiente para você relaxar. Escolha o horário e venha.</p>
+        <div class="btns"><a class="btn" href="#agendar">Agendar meu horário</a><a class="btn ghost"
+            href="#servicos">Ver serviços e preços</a></div>
+      </div>
+      <button class="start" id="start" type="button" hidden>Toque para começar</button>
+      <button class="skip" id="skip" type="button">Pular vídeo</button>
+      <div class="prog" id="prog"></div>
+    </div>
 
-<section id="cortes" class="dark"><div class="wrap cgrid">
- <div>
-  <h2>Nossos cortes</h2>
-  <p class="lead">Arraste para os lados e controle o vídeo: para a direita avança, para a esquerda volta. Toque nas miniaturas para ver os outros cortes.</p>
- </div>
- <div class="cui">
-  <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-   <video id="cv" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
-   <div class="hint" id="hint" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
-   <div class="track"><i id="bar"></i></div>
-  </div>
-  <div class="cap"><button class="arr" id="prev" type="button" aria-label="Corte anterior">‹</button><strong id="cn" aria-live="polite"></strong><button class="arr" id="next" type="button" aria-label="Próximo corte">›</button></div>
-  <div class="thumbs" id="th"></div>
- </div>
-</div></section>
+    <section id="cortes" class="dark">
+      <div class="wrap cgrid">
+        <div>
+          <h2>Nossos cortes</h2>
+          <p class="lead">Arraste para os lados e controle o vídeo: para a direita avança, para a esquerda
+            volta. Toque nas miniaturas para ver os outros cortes.</p>
+        </div>
+        <div class="cui">
+          <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <video id="cv" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
+            <div class="hint" id="hint" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
+            <div class="track"><i id="bar"></i></div>
+          </div>
+          <div class="cap"><button class="arr" id="prev" type="button" aria-label="Corte anterior">‹</button><strong
+              id="cn" aria-live="polite"></strong><button class="arr" id="next" type="button"
+              aria-label="Próximo corte">›</button></div>
+          <div class="thumbs" id="th"></div>
+        </div>
+      </div>
+    </section>
 
-<section id="servicos" class="light"><div class="wrap sgrid">
- <div class="sleft">
-  <h2>Serviços</h2>
-  <p class="lead">Valores por atendimento. Toque em agendar para já escolher o serviço.</p>
-  <div class="croc" id="croc" aria-hidden="true"><video id="crocw" class="cw" src="video/croc.webm" muted playsinline preload="none" tabindex="-1"></video><canvas id="crocc"></canvas><video id="crocv" src="video/croc.mp4" muted playsinline preload="none" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video></div>
- </div>
- <ul class="services reveal">
-  <li><div><strong>Acabamento</strong><small>Pezinho, contorno e sobrancelha · 15 min</small></div><span class="price">R$ 20</span><button class="mini" data-s="Acabamento">Agendar</button></li>
-  <li><div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div><span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button></li>
-  <li><div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small></div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button></li>
-  <li><div><strong>Corte + Barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
- </ul>
-</div></section>
+    <section id="servicos" class="light">
+      <div class="wrap sgrid">
+        <div class="sleft">
+          <h2>Serviços</h2>
+          <p class="lead">Valores por atendimento. Toque em agendar para já escolher o serviço.</p>
+          <div class="croc" id="croc" aria-hidden="true"><video id="crocw" class="cw" src="video/croc.webm" muted
+              playsinline preload="none" tabindex="-1"></video><canvas id="crocc"></canvas><video id="crocv"
+              src="video/croc.mp4" muted playsinline preload="none" tabindex="-1"
+              style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video></div>
+        </div>
+        <ul class="services reveal">
+          <li>
+            <div><strong>Acabamento</strong><small>Pezinho, contorno e sobrancelha · 15 min</small></div>
+            <span class="price">R$ 20</span><button class="mini" data-s="Acabamento">Agendar</button>
+          </li>
+          <li>
+            <div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div>
+            <span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button>
+          </li>
+          <li>
+            <div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small>
+            </div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button>
+          </li>
+          <li>
+            <div><strong>Corte + Barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$
+              80</span><button class="mini" data-s="Corte + Barba">Agendar</button>
+          </li>
+        </ul>
+      </div>
+    </section>
 
-<section id="agendar" class="book"><div class="wrap grid">
- <div>
-  <h2>Agende seu corte</h2>
-  <p class="lead">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, reservamos sua vaga e disponibilizamos o WhatsApp para falar com a barbearia.</p>
- </div>
- <form id="f" class="reveal" novalidate>
-  <fieldset><legend>1. Serviço</legend>
-   <div class="opts" id="svc"></div></fieldset>
-  <fieldset><legend>2. Barbeiro</legend>
-   <div class="opts" id="bar-opts"></div></fieldset>
-  <fieldset><legend>3. Dia</legend>
-   <input type="date" id="d" aria-label="Dia do atendimento"><p class="msg" id="dm"></p></fieldset>
-  <fieldset><legend>4. Turno</legend>
-   <div class="opts turnos" id="sl"></div><p class="msg" id="sm">Escolha o barbeiro e o dia para ver os turnos.</p></fieldset>
-  <fieldset><legend>5. Seus dados</legend>
-   <div class="row"><div><label class="l" for="n">Nome</label><input type="text" maxlength="120" id="n" autocomplete="name"></div>
-   <div><label class="l" for="t">Telefone</label><input type="tel" maxlength="15" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
-  <button class="btn" type="submit" disabled>Carregando agendamento...</button>
-  <p class="msg err" id="e" role="alert"></p>
-  <div class="ok" id="ok" hidden></div>
- </form>
+    <section id="agendar" class="book">
+      <div class="wrap grid">
+        <div>
+          <h2>Agende seu corte</h2>
+          <p class="lead">Escolha o serviço, o barbeiro, o dia e o turno. Ao enviar, reservamos sua vaga e
+            disponibilizamos o WhatsApp para falar com a barbearia.</p>
+        </div>
+        <form id="f" class="reveal" novalidate>
+          <fieldset>
+            <legend>1. Serviço</legend>
+            <div class="opts" id="svc"></div>
+          </fieldset>
+          <fieldset>
+            <legend>2. Barbeiro</legend>
+            <div class="opts" id="bar-opts"></div>
+          </fieldset>
+          <fieldset>
+            <legend>3. Dia</legend>
+            <input type="date" id="d" aria-label="Dia do atendimento">
+            <p class="msg" id="dm"></p>
+          </fieldset>
+          <fieldset>
+            <legend>4. Turno</legend>
+            <div class="opts turnos" id="sl"></div>
+            <p class="msg" id="sm">Escolha o barbeiro e o dia para ver os turnos.</p>
+          </fieldset>
+          <fieldset>
+            <legend>5. Seus dados</legend>
+            <div class="row">
+              <div><label class="l" for="n">Nome</label><input type="text" maxlength="120" id="n" autocomplete="name">
+              </div>
+              <div><label class="l" for="t">Telefone</label><input type="tel" maxlength="15" id="t" autocomplete="tel"
+                  placeholder="(11) 90000-0000"></div>
+            </div>
+          </fieldset>
+          <button class="btn" type="submit" disabled>Carregando agendamento...</button>
+          <p class="msg err" id="e" role="alert"></p>
+          <div class="ok" id="ok" hidden></div>
+        </form>
 
- <div class="stage" id="stage" aria-hidden="true">
-  <video class="barber" data-b="Alexandre" muted playsinline preload="auto"><source src="video/barbeiros/alexandre.webm" type="video/webm"><source src="video/barbeiros/alexandre.mp4" type="video/mp4"></video>
-  <video class="barber" data-b="Luiz" muted playsinline preload="auto"><source src="video/barbeiros/luiz.webm" type="video/webm"><source src="video/barbeiros/luiz.mp4" type="video/mp4"></video>
-  <video class="barber" data-b="Matheus" muted playsinline preload="auto"><source src="video/barbeiros/matheus.webm" type="video/webm"><source src="video/barbeiros/matheus.mp4" type="video/mp4"></video>
- </div>
-</div></section>
-</main>
+        <div class="stage" id="stage" aria-hidden="true">
+          <video class="barber" data-b="Alexandre" muted playsinline preload="auto">
+            <source src="video/barbeiros/alexandre.webm" type="video/webm">
+            <source src="video/barbeiros/alexandre.mp4" type="video/mp4">
+          </video>
+          <video class="barber" data-b="Luiz" muted playsinline preload="auto">
+            <source src="video/barbeiros/luiz.webm" type="video/webm">
+            <source src="video/barbeiros/luiz.mp4" type="video/mp4">
+          </video>
+          <video class="barber" data-b="Matheus" muted playsinline preload="auto">
+            <source src="video/barbeiros/matheus.webm" type="video/webm">
+            <source src="video/barbeiros/matheus.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </section>
+  </main>
 
-<footer id="contato"><div class="wrap">
- <div class="brand"><img src="img/malas1.jpg" alt="" width="56" height="56"><span>Os Malas <em>Studio</em></span></div>
- <div class="info">
-  <div><h3>Horário</h3><p>Ter a sex: 8h30 às 20h<br>Sábado: 8h30 às 18h<br>Dom e seg: Fechado</p></div>
-  <div><h3>Endereço</h3><p>Avenida Sapopemba, 6839<br>São Paulo, SP</p></div>
-  <div><h3>Contato</h3><p>WhatsApp (11) 97739-5774<br>@osmalasstudio</p></div>
- </div>
- <p class="copyr">© 2026 Os Malas Studio</p>
-</div></footer>
+  <footer id="contato">
+    <div class="wrap">
+      <div class="brand"><img src="img/malas1.jpg" alt="" width="56" height="56"><span>Os Malas
+          <em>Studio</em></span></div>
+      <div class="info">
+        <div>
+          <h3>Horário</h3>
+          <p>Ter a sex: 8h30 às 20h<br>Sábado: 8h30 às 18h<br>Dom e seg: Fechado</p>
+        </div>
+        <div>
+          <h3>Endereço</h3>
+          <p>Avenida Sapopemba, 6839<br>São Paulo, SP</p>
+        </div>
+        <div>
+          <h3>Contato</h3>
+          <p>WhatsApp (11) 97739-5774<br>@osmalasstudio</p>
+        </div>
+      </div>
+      <p class="copyr">© 2026 Os Malas Studio</p>
+    </div>
+  </footer>
 
-<script src="supabase-config.js"></script>
-<script src="script.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>
