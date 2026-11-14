@@ -736,21 +736,43 @@ getById("booking-form").addEventListener("submit", async event => {
 /* ===== Menu fixo: link da seção atual ===== */
 (() => {
   const navigationLinks = [...document.querySelectorAll(".section-navigation a")];
-  if ("IntersectionObserver" in window) {
-    const sectionObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-
-      navigationLinks.forEach(link => {
-        const isCurrentSection = link.getAttribute("href") === `#${entry.target.id}`;
-        link.setAttribute("aria-current", isCurrentSection);
-      });
-    }), { rootMargin: "-45% 0px -50% 0px" });
-
+  const setCurrentNavigationLink = sectionId => {
     navigationLinks.forEach(link => {
-      const targetSection = document.querySelector(link.getAttribute("href"));
-      if (targetSection) sectionObserver.observe(targetSection);
+      link.setAttribute("aria-current", String(link.getAttribute("href") === `#${sectionId}`));
     });
-  }
+  };
+  const isAtPageEnd = () =>
+    window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1;
+  const updateContactNavigationLink = () => {
+    if (isAtPageEnd()) setCurrentNavigationLink("contact");
+  };
+  const sectionObserver = "IntersectionObserver" in window
+    ? new IntersectionObserver(entries => {
+      if (isAtPageEnd()) {
+        setCurrentNavigationLink("contact");
+        return;
+      }
+
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setCurrentNavigationLink(entry.target.id);
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" })
+    : null;
+
+  navigationLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      setCurrentNavigationLink(link.getAttribute("href").slice(1));
+    });
+
+    const targetSection = document.querySelector(link.getAttribute("href"));
+    if (targetSection && sectionObserver) {
+      sectionObserver.observe(targetSection);
+    }
+  });
+
+  window.addEventListener("scroll", updateContactNavigationLink, { passive: true });
+  window.addEventListener("resize", updateContactNavigationLink);
+  updateContactNavigationLink();
 })();
 
 /* ===== Jacaré entra andando na seção Serviços =====
