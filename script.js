@@ -524,11 +524,11 @@ obterElementoPorId("formulario-agendamento").addEventListener("submit", async ev
   const NOMES_CORTES = [
     "Afro Low Taper Fade",
     "Afro Curto Low Taper Fade",
-    "Crop com fade",
-    "Tranças com desenho",
-    "Cornrows com fade",
-    "Platinado",
-    "Grisalho ondulado",
+    "Mid Skin Fade",
+    "Tranças Nagô Desenhadas",
+    "Tranças Nagô Retas",
+    "Buzz Cut Platinado",
+    "Low Taper Fade com Luzes",
     "Taper Fade com Nudred"
   ];
 
