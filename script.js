@@ -529,7 +529,7 @@ obterElementoPorId("formulario-agendamento").addEventListener("submit", async ev
     "Cornrows com fade",
     "Platinado",
     "Grisalho ondulado",
-    "Topete com risca"
+    "Taper Fade com Nudred"
   ];
 
   const controleVideoCorte = obterElementoPorId("controle-video-cortes"),
