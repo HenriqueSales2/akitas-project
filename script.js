@@ -523,7 +523,7 @@ obterElementoPorId("formulario-agendamento").addEventListener("submit", async ev
 (() => {
   const NOMES_CORTES = [
     "Afro Low Taper Fade",
-    "Degradê preciso",
+    "Afro Curto Low Taper Fade",
     "Crop com fade",
     "Tranças com desenho",
     "Cornrows com fade",
