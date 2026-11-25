@@ -153,7 +153,7 @@ Serviços, barbeiros, turnos e limite de vagas ficam na função `config_agendam
 ### Vídeos e imagens
 
 - **Vídeo de abertura:** substitua `video/osmalas.mp4` e `img/poster.jpg` mantendo os nomes.
-- **Galeria de cortes:** para trocar um corte, substitua os três arquivos de mesmo número: `video/cortes/corte-N.mp4`, `img/cortes/corte-N.jpg` (miniatura) e `img/cortes/corte-N-poster.jpg`. Os nomes exibidos ficam na lista `CUTS`, no fim do `script.js`.
+- **Galeria de cortes:** para trocar um corte, substitua os três arquivos de mesmo número: `video/cortes/corte-N.mp4`, `img/cortes/corte-N.jpg` (miniatura) e `img/cortes/corte-N-poster.jpg`. Os nomes exibidos ficam na lista `NOMES_CORTES`, no `script.js`.
 - **Preparar o vídeo de um corte:** para o arrastar funcionar bem, o vídeo precisa de keyframes frequentes:
   ```bash
   ffmpeg -i entrada.mp4 -an -c:v libx264 -crf 26 -g 2 -bf 0 -pix_fmt yuv420p -movflags +faststart saida.mp4
