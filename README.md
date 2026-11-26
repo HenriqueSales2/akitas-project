@@ -158,7 +158,7 @@ Serviços, barbeiros, turnos e limite de vagas ficam na função `config_agendam
   ```bash
   ffmpeg -i entrada.mp4 -an -c:v libx264 -crf 26 -g 2 -bf 0 -pix_fmt yuv420p -movflags +faststart saida.mp4
   ```
-- **Jacaré:** `video/croc.webm` (Chrome, Edge e Firefox, com transparência), `video/croc.mp4` (Safari e iPhone, o `script.js` combina cor e transparência em um canvas) e `img/croc-final.webp` (pose final, usada se o navegador bloquear o vídeo). O tamanho é ajustado em `.croc` no `style.css`.
+- **Jacaré:** `video/croc.webm` (Chrome, Edge e Firefox, com transparência), `video/croc.mp4` (Safari e iPhone; o `script.js` combina cor e transparência em um canvas) e `img/croc-final.webp` (pose final, usada se o navegador bloquear o vídeo). O tamanho é ajustado em `.croc` no `style.css`.
 
 ---
 
