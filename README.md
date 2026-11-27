@@ -59,7 +59,7 @@ Olá, Os Malas! Reservei <serviço> com <barbeiro>, dia <data>, turno <turno>. N
 As regras estão no banco e não apenas no navegador, então não dá para burlá-las alterando a página:
 
 - O **preço** é definido pelo banco, não pelo navegador.
-- Datas passadas, domingos, segundas e sábado à noite são recusados.
+- Datas anteriores, domingos, segundas e sábado à noite são recusados.
 - Turnos que já terminaram no dia de hoje são recusados.
 - O limite de 10 vagas por barbeiro, dia e turno é protegido por uma trava (`pg_advisory_xact_lock`), então duas pessoas reservando ao mesmo tempo não passam do limite.
 - Nome e telefone são validados (telefone com 10 a 15 dígitos).
@@ -158,7 +158,7 @@ Serviços, barbeiros, turnos e limite de vagas ficam na função `config_agendam
   ```bash
   ffmpeg -i entrada.mp4 -an -c:v libx264 -crf 26 -g 2 -bf 0 -pix_fmt yuv420p -movflags +faststart saida.mp4
   ```
-- **Jacaré:** `video/croc.webm` (Chrome, Edge e Firefox, com transparência), `video/croc.mp4` (Safari e iPhone, o `script.js` combina cor e transparência em um canvas) e `img/croc-final.webp` (pose final, usada se o navegador bloquear o vídeo). O tamanho é ajustado em `.croc` no `style.css`.
+- **Jacaré:** `video/croc.webm` (Chrome, Edge e Firefox, com transparência), `video/croc.mp4` (Safari e iPhone; o `script.js` combina cor e transparência em um canvas) e `img/croc-final.webp` (pose final, usada se o navegador bloquear o vídeo). O tamanho é ajustado em `.croc` no `style.css`.
 
 ---
 
