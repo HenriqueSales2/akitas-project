@@ -56,7 +56,7 @@ Olá, Os Malas! Reservei <serviço> com <barbeiro>, dia <data>, turno <turno>. N
 
 ### Regras que o banco garante
 
-As regras ficam no banco e não apenas no navegador, então não dá para burlá-las alterando a página:
+As regras estão no banco e não apenas no navegador, então não dá para burlá-las alterando a página:
 
 - O **preço** é definido pelo banco, não pelo navegador.
 - Datas passadas, domingos, segundas e sábado à noite são recusados.
